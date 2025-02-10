@@ -1,38 +1,11 @@
 import { GenerateSentenceButton } from '@/components/GenerateSentenceButton/GenerateSentenceButton';
 import Image from 'next/image';
-import OpenAI from 'openai';
-
-const openai = new OpenAI();
 
 export default function Home() {
-  async function generateSentence() {
-    'use server';
-    // Mutate data
-
-    console.log('siema');
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'developer',
-          content:
-            'You generate 10 sentences for word provided by user. These sentences are used to learn vocabulary in mobile application.',
-        },
-        {
-          role: 'user',
-          content: 'apprehend',
-        },
-      ],
-      // store: true,
-    });
-
-    console.log(completion.choices[0].message);
-  }
-
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <GenerateSentenceButton generateSentence={generateSentence} />
+        <GenerateSentenceButton />
       </main>
       <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
         <a
