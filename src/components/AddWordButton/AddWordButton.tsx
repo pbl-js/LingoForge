@@ -22,10 +22,14 @@ import {
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { Input } from '../ui/input';
-import { AddWordRouteResponse, addWordSchema } from '@/app/api/add-word/route';
 import wretch from 'wretch';
+import { addWordSchema } from './addWord.zod';
+import { useRouter } from 'next/navigation';
 
 export function AddWordButton({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = React.useState(false);
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof addWordSchema>>({
     resolver: zodResolver(addWordSchema),
     defaultValues: {
@@ -39,11 +43,14 @@ export function AddWordButton({ children }: { children: React.ReactNode }) {
       await wretch('/api/add-word').post(values).json();
     } catch (err) {
       console.log('Problem with creating word', err);
+    } finally {
+      router.refresh();
+      setOpen(false);
     }
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>{children}</Button>
       </DialogTrigger>
@@ -70,8 +77,8 @@ export function AddWordButton({ children }: { children: React.ReactNode }) {
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={form.formState.isLoading}>
-              {form.formState.isLoading ? '...Adding' : 'Add word'}
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting ? '...Adding' : 'Add word'}
             </Button>
           </form>
         </Form>

@@ -11,7 +11,7 @@ export type AddWordRouteResponse = {
 
 export async function POST(req: NextRequest) {
   try {
-    console.log('POST /api/add-word runs');
+    console.log('POST /api/delete-word runs');
     const body = addWordSchema.parse(await req.json());
 
     const user = await currentUser();
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       }
     );
   } catch (err) {
-    console.log('POST /api/add-word', err);
+    console.log('POST /api/delete-word', err);
 
     return NextResponse.json(
       { message: 'Something went wrong' },
