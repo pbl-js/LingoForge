@@ -34,18 +34,20 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-purple-950 flex flex-col min-h-screen p-3`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-purple-950`}
         >
-          <header className="flex flex-row justify-end items-center bg-purple-900 p-3 w-full rounded-xl gap-3 mb-5">
-            <SignedOut>
-              <SignInButton />
-              <SignUpButton />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-          </header>
-          {children}
+          <div className="flex flex-col min-h-screen p-3">
+            <header className="flex flex-row justify-end items-center bg-purple-900 p-3 w-full rounded-xl gap-3 mb-5">
+              <SignedOut>
+                <SignInButton />
+                <SignUpButton />
+              </SignedOut>
+              <SignedIn>
+                <UserButton />
+              </SignedIn>
+            </header>
+            {children}
+          </div>
         </body>
       </html>
     </ClerkProvider>
