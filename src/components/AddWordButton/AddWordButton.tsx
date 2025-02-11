@@ -22,26 +22,24 @@ import {
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { Input } from '../ui/input';
-
-const formSchema = z.object({
-  word: z.string().min(2, {
-    message: 'Word must be at least 2 characters.',
-  }),
-});
+import { AddWordRouteResponse, addWordSchema } from '@/app/api/add-word/route';
+import wretch from 'wretch';
 
 export function AddWordButton({ children }: { children: React.ReactNode }) {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof addWordSchema>>({
+    resolver: zodResolver(addWordSchema),
     defaultValues: {
       word: '',
     },
   });
 
   //   form.formState.isLoading;
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof addWordSchema>) {
+    try {
+      await wretch('/api/add-word').post(values).json();
+    } catch (err) {
+      console.log('Problem with creating word', err);
+    }
   }
 
   return (
