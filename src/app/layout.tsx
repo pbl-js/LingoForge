@@ -37,7 +37,7 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased bg-purple-950`}
         >
           <div className="flex flex-col min-h-screen p-3">
-            <header className="flex flex-row justify-end items-center bg-purple-900 p-3 w-full rounded-xl gap-3 mb-5">
+            <header className="flex flex-row justify-end items-center bg-purple-900 p-3 w-full rounded-xl gap-3 mb-5 h-[55px]">
               <SignedOut>
                 <SignInButton />
                 <SignUpButton />

@@ -37,9 +37,10 @@ model Word {
   id        Int        @id @default(autoincrement())
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-  //
+  // Speach part - needed for responses in sentence generated games
   userId    String
   title     String
+  // 
   useCases  UseCase[]
   sentences Sentence[]
 }
