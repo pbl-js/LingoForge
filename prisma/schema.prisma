@@ -17,19 +17,27 @@ model Sentence {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  title     String
-  useCase   String
-  Word      Word?    @relation(fields: [wordId], references: [id])
-  wordId    Int?
+  content   String
+  useCase   UseCase  @relation(fields: [useCaseId], references: [id])
+  useCaseId Int
 }
 
 model Word {
-  id        Int        @id @default(autoincrement())
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  // Speach part - needed for responses in sentence generated games
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   userId    String
   title     String
-  // 
-  sentences Sentence[]
+  useCases  UseCase[]
+}
+
+model UseCase {
+  id          Int        @id @default(autoincrement())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  title       String
+  description String
+  word        Word       @relation(fields: [wordId], references: [id])
+  wordId      Int
+  sentences   Sentence[]
 }

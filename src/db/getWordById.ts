@@ -16,7 +16,11 @@ export async function getWordById(
       id: wordId,
     },
     include: {
-      sentences: true,
+      useCases: {
+        include: {
+          sentences: true,
+        },
+      },
     },
   });
 

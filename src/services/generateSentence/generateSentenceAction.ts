@@ -9,7 +9,7 @@ import { PrismaClient } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { routes } from '@/consts/routes';
 import { getWordById } from '@/db/getWordById';
-import { currentUser, User } from '@clerk/nextjs/server';
+import { currentUser } from '@clerk/nextjs/server';
 
 const prisma = new PrismaClient();
 
@@ -79,41 +79,34 @@ export async function generateSentenceAction(wordId: number) {
   const parsedRes = WordWithSentencesSchema.parse(
     JSON.parse(res.choices[0]?.message.content)
   );
-  return parsedRes;
 
-  // await prisma.useCase.createMany({
-  //   data: parsedRes.usagesList.map((item) => ({
-  //     wordId: 1,
-  //     title: item.usage,
-  //     sentences: {},
-  //   })),
-  // });
+  // Create UseCases and their associated Sentences
+  const updatedWord = await prisma.word.update({
+    where: {
+      id: wordId,
+    },
+    data: {
+      useCases: {
+        create: parsedRes.usagesList.map((usage) => ({
+          title: usage.usageTitle,
+          description: usage.usageDescription,
+          sentences: {
+            create: usage.sentencesList.map((sentence) => ({
+              content: sentence,
+            })),
+          },
+        })),
+      },
+    },
+    include: {
+      useCases: {
+        include: {
+          sentences: true,
+        },
+      },
+    },
+  });
 
-  // const flattenedSentences = parsedRes.usagesList.flatMap((item) => {
-  //   return item.sentencesList.map((sentence) => ({
-  //     sentence,
-  //     useCase: item.usageTitle,
-  //     useCaseDescription: item.usageDescription,
-  //   }));
-  // });
-  // return parsedRes;
-
-  // const word = await prisma.word.update({
-  //   where: {
-  //     id: wordId,
-  //   },
-  //   data: {
-
-  //   },
-  //   include: {
-  //     sentences: {
-  //       include: {
-
-  //       }
-  //     },
-  //   },
-  // });
-
-  // revalidatePath(routes.wordListDetails(word.id));
-  // return word;
+  revalidatePath(routes.wordListDetails(word.id));
+  return updatedWord;
 }
