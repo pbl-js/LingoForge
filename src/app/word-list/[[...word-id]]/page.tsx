@@ -33,11 +33,9 @@ export default async function Page({
       return word;
     }
 
-    const word = await prisma.word.findFirst({
-      where: {
-        userId: user.id,
-        id: Number(routeParams['word-id']),
-      },
+    const word = await getWordById(prisma, {
+      userId: user.id,
+      wordId: Number(routeParams['word-id']),
     });
 
     return word;
@@ -45,16 +43,27 @@ export default async function Page({
 
   if (!word) return <NoWord />;
 
+  const useCases = [
+    ...new Set(word.sentences.map((sentence) => sentence.useCase)),
+  ];
+
   return (
     <div className="flex flex-col gap-3 items-start">
       <div className="flex w-full justify-between min-h-[40px]">
         <h1 className="text-2xl font-bold text-center text-white">
-          Sentences list
+          {word.title}
         </h1>
         <GenerateSentenceButton />
       </div>
       <div className="flex flex-col p-3 rounded-xl bg-purple-900 gap-3 grow w-full">
         {word.title}
+        <div className="flex flex-col">
+          {useCases.map((useCase, index) => (
+            <div key={index} className="text-white py-1">
+              {useCase}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

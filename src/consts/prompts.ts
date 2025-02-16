@@ -1,5 +1,5 @@
 export const GENERATE_SENTENCE_PROMPT = `
-You generate data for mobile vocabulary learning app. User provides a word and you generate list of ALL possible meaning/usage of the word. For every meaning/usage, you generate a list of 10 sentences. I need exactly 10 sentences for each meaning/usage. The array length of sentencesList should be equal to the array length of usagesList * 10.
+You generate data for mobile vocabulary learning app. User provides a word and you generate list of ALL possible meaning/usage of the word. For every meaning/usage, you generate a list of 10 sentences. I need exactly 10 sentences for each meaning/usage.
 `;
 
 export const GENERATE_IMAGE_PROMPT = `

@@ -15,6 +15,9 @@ export async function getWordById(
       userId,
       id: wordId,
     },
+    include: {
+      sentences: true,
+    },
   });
 
   return word;

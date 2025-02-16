@@ -1,14 +1,15 @@
 'use client';
-import { generateSentenceAction } from '@/services/generateSentence/generateSentenceAction';
-import OpenAI from 'openai';
+import {
+  generateSentenceAction,
+  WordWithSentences,
+} from '@/services/generateSentence/generateSentenceAction';
 import { Button } from '../ui/button';
 import React from 'react';
 
 export function GenerateSentenceButton() {
   // transition hook
   const [isGenerating, generate] = React.useTransition();
-  const [sentence, setSentence] =
-    React.useState<OpenAI.Chat.Completions.ChatCompletionMessage>();
+  const [sentence, setSentence] = React.useState<WordWithSentences>();
 
   const generateSentence = async () => {
     const sentence = await generateSentenceAction();
