@@ -53,7 +53,7 @@ export default async function Page({
         <h1 className="text-2xl font-bold text-center text-white">
           {word.title}
         </h1>
-        <GenerateSentenceButton />
+        <GenerateSentenceButton wordId={word.id} />
       </div>
       <div className="flex flex-col p-3 rounded-xl bg-purple-900 gap-3 grow w-full">
         {word.title}

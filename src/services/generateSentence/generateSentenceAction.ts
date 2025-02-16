@@ -8,6 +8,8 @@ import { GENERATE_SENTENCE_PROMPT } from '@/consts/prompts';
 import { PrismaClient } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { routes } from '@/consts/routes';
+import { getWordById } from '@/db/getWordById';
+import { currentUser, User } from '@clerk/nextjs/server';
 
 const prisma = new PrismaClient();
 
@@ -21,7 +23,8 @@ const WordWithSentencesSchema = z.object({
   // }))
   usagesList: z.array(
     z.object({
-      usage: z.string(),
+      usageTitle: z.string(),
+      usageDescription: z.string(),
       sentencesList: z.array(z.string()),
     })
   ),
@@ -47,9 +50,28 @@ const oaiGenerateSentence = React.cache((sentence: string) =>
   })
 );
 
-export async function generateSentenceAction() {
+export async function generateSentenceAction(wordId: number) {
   // Mutate data
-  const res = await oaiGenerateSentence('apprehend');
+
+  const user = await currentUser();
+
+  if (!user) {
+    return {
+      error: 'User not found',
+    };
+  }
+  const word = await getWordById(prisma, {
+    userId: user.id,
+    wordId: wordId,
+  });
+
+  if (!word) {
+    return {
+      error: 'Word not found',
+    };
+  }
+
+  const res = await oaiGenerateSentence(word.title);
 
   if (!res.choices[0]?.message.content)
     throw new Error('No sentences for provided word');
@@ -57,7 +79,7 @@ export async function generateSentenceAction() {
   const parsedRes = WordWithSentencesSchema.parse(
     JSON.parse(res.choices[0]?.message.content)
   );
-  // return parsedRes;
+  return parsedRes;
 
   // await prisma.useCase.createMany({
   //   data: parsedRes.usagesList.map((item) => ({
@@ -67,32 +89,31 @@ export async function generateSentenceAction() {
   //   })),
   // });
 
-  const flattenedSentences = parsedRes.usagesList.flatMap((item) => {
-    return item.sentencesList.map((sentence) => ({
-      sentence,
-      useCase: item.usage,
-    }));
-  });
+  // const flattenedSentences = parsedRes.usagesList.flatMap((item) => {
+  //   return item.sentencesList.map((sentence) => ({
+  //     sentence,
+  //     useCase: item.usageTitle,
+  //     useCaseDescription: item.usageDescription,
+  //   }));
+  // });
+  // return parsedRes;
 
-  const word = await prisma.word.update({
-    where: {
-      id: 1,
-    },
-    data: {
-      sentences: {
-        createMany: {
-          data: flattenedSentences.map((sentence) => ({
-            title: sentence.sentence,
-            useCase: sentence.useCase,
-          })),
-        },
-      },
-    },
-    include: {
-      sentences: true,
-    },
-  });
+  // const word = await prisma.word.update({
+  //   where: {
+  //     id: wordId,
+  //   },
+  //   data: {
 
-  revalidatePath(routes.wordListDetails(word.id));
-  return word;
+  //   },
+  //   include: {
+  //     sentences: {
+  //       include: {
+
+  //       }
+  //     },
+  //   },
+  // });
+
+  // revalidatePath(routes.wordListDetails(word.id));
+  // return word;
 }
