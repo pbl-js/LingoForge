@@ -51,8 +51,6 @@ const oaiGenerateSentence = React.cache((sentence: string) =>
 );
 
 export async function generateSentenceAction(wordId: number) {
-  // Mutate data
-
   const user = await currentUser();
 
   if (!user) {
@@ -60,6 +58,7 @@ export async function generateSentenceAction(wordId: number) {
       error: 'User not found',
     };
   }
+
   const word = await getWordById(prisma, {
     userId: user.id,
     wordId: wordId,
@@ -80,31 +79,49 @@ export async function generateSentenceAction(wordId: number) {
     JSON.parse(res.choices[0]?.message.content)
   );
 
-  // Create UseCases and their associated Sentences
-  const updatedWord = await prisma.word.update({
-    where: {
-      id: wordId,
-    },
-    data: {
-      useCases: {
-        create: parsedRes.usagesList.map((usage) => ({
-          title: usage.usageTitle,
-          description: usage.usageDescription,
-          sentences: {
-            create: usage.sentencesList.map((sentence) => ({
-              content: sentence,
-            })),
-          },
-        })),
-      },
-    },
-    include: {
-      useCases: {
-        include: {
-          sentences: true,
+  const updatedWord = await prisma.$transaction(async (tx) => {
+    // First delete all sentences
+    await tx.sentence.deleteMany({
+      where: {
+        useCase: {
+          wordId: wordId,
         },
       },
-    },
+    });
+
+    // Then delete all useCases
+    await tx.useCase.deleteMany({
+      where: {
+        wordId: wordId,
+      },
+    });
+
+    // Create new useCases and sentences in bulk
+    return tx.word.update({
+      where: {
+        id: wordId,
+      },
+      data: {
+        useCases: {
+          create: parsedRes.usagesList.map((usage) => ({
+            title: usage.usageTitle,
+            description: usage.usageDescription,
+            sentences: {
+              create: usage.sentencesList.map((sentence) => ({
+                content: sentence,
+              })),
+            },
+          })),
+        },
+      },
+      include: {
+        useCases: {
+          include: {
+            sentences: true,
+          },
+        },
+      },
+    });
   });
 
   revalidatePath(routes.wordListDetails(word.id));

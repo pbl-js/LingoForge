@@ -22,15 +22,6 @@ model Sentence {
   useCaseId Int
 }
 
-model Word {
-  id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  userId    String
-  title     String
-  useCases  UseCase[]
-}
-
 model UseCase {
   id          Int        @id @default(autoincrement())
   createdAt   DateTime   @default(now())
@@ -40,4 +31,13 @@ model UseCase {
   word        Word       @relation(fields: [wordId], references: [id])
   wordId      Int
   sentences   Sentence[]
+}
+
+model Word {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  userId    String
+  title     String
+  useCases  UseCase[]
 }
