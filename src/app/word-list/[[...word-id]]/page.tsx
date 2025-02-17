@@ -1,4 +1,3 @@
-import { GenerateSentenceButton } from '@/components/GenerateSentenceButton/GenerateSentenceButton';
 import React from 'react';
 import { currentUser, User } from '@clerk/nextjs/server';
 import { PrismaClient } from '@prisma/client';

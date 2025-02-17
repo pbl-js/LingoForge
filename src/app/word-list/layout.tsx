@@ -11,6 +11,7 @@ export default async function Layout({
   children: React.ReactNode;
 }>) {
   const user = (await currentUser()) as User;
+
   const prisma = new PrismaClient();
   const wordList = await getWords(prisma, { userId: user.id });
 
