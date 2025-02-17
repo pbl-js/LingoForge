@@ -10,8 +10,7 @@ import {
   UserButton,
 } from '@clerk/nextjs';
 import './globals.css';
-import Link from 'next/link';
-import { routes } from '@/consts/routes';
+import { MainNavigationMenu } from '@/components/NavigationMenu/NavigationMenu';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -41,20 +40,17 @@ export default function RootLayout({
         >
           <div className="flex flex-col min-h-screen p-3">
             <header className="flex flex-row justify-between items-center bg-purple-900 p-3 w-full rounded-xl gap-3 mb-5">
-              <Link
-                className="inline-flex items-center justify-center rounded-md text-base font-semibold ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-purple-900 text-slate-50 hover:bg-purple-950 h-10 px-4 py-2"
-                href={routes.wordList}
-              >
-                Words List
-              </Link>
-              <SignedOut>
-                <RedirectToSignIn />
-                <SignInButton />
-                <SignUpButton />
-              </SignedOut>
-              <SignedIn>
-                <UserButton />
-              </SignedIn>
+              <MainNavigationMenu />
+              <div className="flex items-center gap-3">
+                <SignedOut>
+                  <RedirectToSignIn />
+                  <SignInButton />
+                  <SignUpButton />
+                </SignedOut>
+                <SignedIn>
+                  <UserButton />
+                </SignedIn>
+              </div>
             </header>
             {children}
           </div>
