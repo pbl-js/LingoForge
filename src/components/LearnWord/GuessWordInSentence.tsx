@@ -3,8 +3,10 @@ import React from 'react';
 
 export function GuessWordInSentence({
   currentWord,
+  nextRound,
 }: {
   currentWord: WordForLearning;
+  nextRound: () => void;
 }) {
   const [correctAnswerId, setCorrectAnswerId] = React.useState<number | null>(
     null
@@ -13,6 +15,9 @@ export function GuessWordInSentence({
   function onClickAnswer(answerId: number) {
     // trigger callback
     setCorrectAnswerId(answerId);
+    setTimeout(() => {
+      nextRound();
+    }, 500);
   }
 
   const [answers, setAnswers] = React.useState<

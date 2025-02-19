@@ -25,7 +25,7 @@ export default async function LearnPage() {
           ))}
         </div>
       </div>
-      <LearnWord wordsList={words} currentWordId={words[0]?.id as number} />
+      <LearnWord wordsList={words} />
     </div>
   );
 }
