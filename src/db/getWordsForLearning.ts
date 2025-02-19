@@ -1,3 +1,4 @@
+import { ArrayElement } from '@/lib/types';
 import { Prisma, PrismaClient } from '@prisma/client';
 
 export async function getWordsForLearning(
@@ -13,6 +14,7 @@ export async function getWordsForLearning(
       userId,
     },
     include: {
+      similarWords: true,
       useCases: {
         include: {
           sentences: true,
@@ -27,3 +29,4 @@ export async function getWordsForLearning(
 export type WordsForLearning = Prisma.PromiseReturnType<
   typeof getWordsForLearning
 >;
+export type WordForLearning = ArrayElement<WordsForLearning>;
