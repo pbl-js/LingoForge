@@ -17,27 +17,37 @@ model Sentence {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  content   String
+  name      String
   useCase   UseCase  @relation(fields: [useCaseId], references: [id])
   useCaseId Int
 }
 
 model UseCase {
   id          Int        @id @default(autoincrement())
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
   title       String
   description String
-  word        Word       @relation(fields: [wordId], references: [id])
   wordId      Int
+  word        Word       @relation(fields: [wordId], references: [id])
   sentences   Sentence[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model SimilarWord {
+  id        Int      @id @default(autoincrement())
+  content   String
+  wordId    Int
+  word      Word     @relation(fields: [wordId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Word {
-  id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  userId    String
-  title     String
-  useCases  UseCase[]
+  id           Int           @id @default(autoincrement())
+  title        String
+  userId       String
+  useCases     UseCase[]
+  similarWords SimilarWord[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }

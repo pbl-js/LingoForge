@@ -1,22 +1,18 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 
-export async function getWordById(
+export async function getWordsForLearning(
   prisma: PrismaClient,
   {
     userId,
-    wordId,
   }: {
     userId: string;
-    wordId: number;
   }
 ) {
-  return prisma.word.findFirst({
+  const words = await prisma.word.findMany({
     where: {
-      id: wordId,
       userId,
     },
     include: {
-      similarWords: true,
       useCases: {
         include: {
           sentences: true,
@@ -24,6 +20,10 @@ export async function getWordById(
       },
     },
   });
+
+  return words;
 }
 
-export type Word = Prisma.PromiseReturnType<typeof getWordById>;
+export type WordsForLearning = Prisma.PromiseReturnType<
+  typeof getWordsForLearning
+>;

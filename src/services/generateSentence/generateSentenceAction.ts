@@ -17,15 +17,12 @@ const openai = new OpenAI();
 
 const WordWithSentencesSchema = z.object({
   word: z.string().describe('The word provided by user'),
-  // sentences: z.array(z.object({
-  //   sentence: z.string(),
-  //   useCase: z.string()
-  // }))
+  similarWords: z.array(z.string()),
   usagesList: z.array(
     z.object({
       usageTitle: z.string(),
       usageDescription: z.string(),
-      sentencesList: z.array(z.string()),
+      sentencesList: z.array(z.object({ name: z.string() })),
     })
   ),
 });
@@ -79,50 +76,66 @@ export async function generateSentenceAction(wordId: number) {
     JSON.parse(res.choices[0]?.message.content)
   );
 
-  const updatedWord = await prisma.$transaction(async (tx) => {
-    // First delete all sentences
-    await tx.sentence.deleteMany({
-      where: {
-        useCase: {
-          wordId: wordId,
-        },
-      },
-    });
-
-    // Then delete all useCases
-    await tx.useCase.deleteMany({
-      where: {
-        wordId: wordId,
-      },
-    });
-
-    // Create new useCases and sentences in bulk
-    return tx.word.update({
-      where: {
-        id: wordId,
-      },
-      data: {
-        useCases: {
-          create: parsedRes.usagesList.map((usage) => ({
-            title: usage.usageTitle,
-            description: usage.usageDescription,
-            sentences: {
-              create: usage.sentencesList.map((sentence) => ({
-                content: sentence,
-              })),
-            },
-          })),
-        },
-      },
-      include: {
-        useCases: {
-          include: {
-            sentences: true,
+  const updatedWord = await prisma.$transaction(
+    async (tx) => {
+      // Delete all related records
+      await tx.sentence.deleteMany({
+        where: {
+          useCase: {
+            wordId: wordId,
           },
         },
-      },
-    });
-  });
+      });
+
+      await tx.useCase.deleteMany({
+        where: {
+          wordId: wordId,
+        },
+      });
+
+      await tx.similarWord.deleteMany({
+        where: {
+          wordId: wordId,
+        },
+      });
+
+      // Create new useCases with sentences and similar words
+      return tx.word.update({
+        where: {
+          id: wordId,
+        },
+        data: {
+          similarWords: {
+            create: parsedRes.similarWords.map((word) => ({
+              content: word,
+            })),
+          },
+          useCases: {
+            create: parsedRes.usagesList.map((usage) => ({
+              title: usage.usageTitle,
+              description: usage.usageDescription,
+              sentences: {
+                create: usage.sentencesList.map((sentence) => ({
+                  name: sentence.name,
+                })),
+              },
+            })),
+          },
+        },
+        include: {
+          similarWords: true,
+          useCases: {
+            include: {
+              sentences: true,
+            },
+          },
+        },
+      });
+    },
+    {
+      timeout: 10000,
+    }
+  );
 
   revalidatePath(routes.wordListDetails(word.id));
   return updatedWord;
