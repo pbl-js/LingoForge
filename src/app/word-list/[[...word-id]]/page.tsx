@@ -6,6 +6,7 @@ import { getWords } from '@/db/getWords';
 import { NoWord } from './NoWord';
 import { WordDetailsHeader } from '@/components/WordDetailsHeader/WordDetailsHeader';
 import { SpeechButton } from '@/components/SpeechButton/SpeechButton';
+import { OpenAISpeechButton } from '@/components/OpenAISpeechButton/OpenAISpeechButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,6 +85,7 @@ export default async function Page({
                     >
                       {sentence.name}
                       <SpeechButton text={sentence.name} />
+                      <OpenAISpeechButton text={sentence.name} />
                     </li>
                   ))}
                 </ul>
