@@ -1,9 +1,8 @@
 import { AddWordButton } from '@/components/AddWordButton/AddWordButton';
-import { routes } from '@/consts/routes';
+import { WordListItem } from '@/components/WordList/WordListItem';
 import { getWords } from '@/db/getWords';
 import { currentUser, User } from '@clerk/nextjs/server';
 import { PrismaClient } from '@prisma/client';
-import Link from 'next/link';
 
 export default async function Layout({
   children,
@@ -24,11 +23,9 @@ export default async function Layout({
           </h1>
           <AddWordButton>Add Word</AddWordButton>
         </div>
-        <div className="flex flex-col p-3 rounded-xl bg-purple-900 gap-3 grow w-full">
-          {wordList.map((el) => (
-            <Link href={routes.wordListDetails(el.id)} key={el.id}>
-              {el.title}
-            </Link>
+        <div className="flex flex-col gap-3 grow w-full">
+          {wordList.map((word) => (
+            <WordListItem key={word.id} id={word.id} title={word.title} />
           ))}
         </div>
       </div>
