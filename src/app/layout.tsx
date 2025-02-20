@@ -38,7 +38,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased bg-purple-950`}
         >
-          <div className="flex flex-col min-h-screen p-3">
+          <div className="flex flex-col min-h-screen p-3 w-full">
             <header className="flex flex-row justify-between items-center bg-purple-900 p-3 w-full rounded-xl gap-3 mb-5">
               <MainNavigationMenu />
               <div className="flex items-center gap-3">

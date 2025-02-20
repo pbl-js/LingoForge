@@ -30,7 +30,7 @@ export function MainNavigationMenu() {
             Words
           </NavigationMenuTrigger>
           <NavigationMenuContent>
-            <ul className="grid gap-3 p-6 w-[400px] bg-purple-900 rounded-md">
+            <ul className="grid gap-3 p-6 bg-purple-900 rounded-md">
               <li className="row-span-3">
                 <NavigationMenuLink asChild>
                   <Link
