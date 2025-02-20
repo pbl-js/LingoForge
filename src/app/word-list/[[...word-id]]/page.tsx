@@ -5,6 +5,7 @@ import { getWordById } from '@/db/getWordById';
 import { getWords } from '@/db/getWords';
 import { NoWord } from './NoWord';
 import { WordDetailsHeader } from '@/components/WordDetailsHeader/WordDetailsHeader';
+import { SpeechButton } from '@/components/SpeechButton/SpeechButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -79,9 +80,10 @@ export default async function Page({
                   {useCase.sentences.map((sentence) => (
                     <li
                       key={sentence.id}
-                      className="text-sm text-gray-300 list-disc list-inside"
+                      className="text-sm text-gray-300 list-disc list-inside flex items-center"
                     >
                       {sentence.name}
+                      <SpeechButton text={sentence.name} />
                     </li>
                   ))}
                 </ul>
