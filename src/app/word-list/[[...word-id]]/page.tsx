@@ -47,7 +47,11 @@ export default async function Page({
 
   return (
     <div className="flex flex-col gap-3 items-start">
-      <WordDetailsHeader title={word.title} wordId={word.id} />
+      <WordDetailsHeader
+        title={word.title}
+        wordId={word.id}
+        audioUrl={word.audioUrl}
+      />
       <div className="flex flex-col p-3 rounded-xl bg-purple-900 gap-3 grow w-full">
         {/* Display similar words */}
         {word.similarWords && word.similarWords.length > 0 && (

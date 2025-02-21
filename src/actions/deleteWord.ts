@@ -5,6 +5,8 @@ import { currentUser } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 import { routes } from '@/consts/routes';
 import { redirect } from 'next/navigation';
+import { del } from '@vercel/blob';
+import { getWordById } from '@/db/getWordById';
 
 export async function deleteWordAction(wordId: number) {
   try {
@@ -15,6 +17,16 @@ export async function deleteWordAction(wordId: number) {
     }
 
     const prisma = new PrismaClient();
+
+    // Get the word to access its audioUrl before deletion
+    const word = await getWordById(prisma, {
+      userId: user.id,
+      wordId: wordId,
+    });
+
+    if (!word) {
+      throw new Error('Word not found');
+    }
 
     await prisma.$transaction(async (tx) => {
       await tx.sentence.deleteMany({
@@ -43,6 +55,16 @@ export async function deleteWordAction(wordId: number) {
           userId: user.id,
         },
       });
+
+      // Delete the audio file after successful database deletion
+      if (word.audioUrl) {
+        try {
+          await del(word.audioUrl);
+        } catch (error) {
+          console.error('Failed to delete audio file:', error);
+          // Decide if you want to throw or continue
+        }
+      }
     });
 
     revalidatePath(routes.wordList);

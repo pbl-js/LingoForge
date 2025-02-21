@@ -79,4 +79,5 @@ model Word {
   similarWords SimilarWord[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  audioUrl     String?
 }

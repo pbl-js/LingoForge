@@ -10,6 +10,7 @@ import { revalidatePath } from 'next/cache';
 import { routes } from '@/consts/routes';
 import { getWordById } from '@/db/getWordById';
 import { currentUser } from '@clerk/nextjs/server';
+import { put, del } from '@vercel/blob';
 
 const prisma = new PrismaClient();
 
@@ -69,6 +70,53 @@ export async function generateSentenceAction(wordId: number) {
 
   const res = await oaiGenerateSentence(word.title);
 
+  const wordTitleAudio = await openai.audio.speech.create({
+    model: 'tts-1-hd',
+    voice: 'sage',
+    input: word.title,
+    speed: 0.7,
+  });
+
+  // Delete old audio if exists
+  if (word.audioUrl) {
+    try {
+      await del(word.audioUrl);
+    } catch (error) {
+      console.error('Failed to delete old audio:', error);
+    }
+  }
+  let audioUrl: string;
+  // Save audio to Vercel Blob
+  try {
+    // Get the audio as an ArrayBuffer
+    const audioBuffer = await wordTitleAudio.arrayBuffer();
+
+    // Make sure we have data
+    if (!audioBuffer || audioBuffer.byteLength === 0) {
+      throw new Error('Received empty audio buffer from OpenAI');
+    }
+
+    // Create a Buffer from the ArrayBuffer
+    const buffer = Buffer.from(audioBuffer);
+
+    // Save to Vercel Blob with content type
+    const { url } = await put(`${word.id}-${word.title}.mp3`, buffer, {
+      access: 'public',
+      contentType: 'audio/mpeg', // Add proper content type
+    });
+
+    // Verify the URL was created
+    if (!url) {
+      throw new Error('Failed to get URL from Vercel Blob');
+    }
+
+    console.log('Audio saved to:', url); // Debug log
+    audioUrl = url;
+  } catch (error) {
+    console.error('Error saving audio:', error);
+    throw error; // Re-throw to handle in the transaction
+  }
+
   if (!res.choices[0]?.message.content)
     throw new Error('No sentences for provided word');
 
@@ -105,6 +153,7 @@ export async function generateSentenceAction(wordId: number) {
           id: wordId,
         },
         data: {
+          audioUrl: audioUrl,
           similarWords: {
             create: parsedRes.similarWords.map((word) => ({
               content: word,

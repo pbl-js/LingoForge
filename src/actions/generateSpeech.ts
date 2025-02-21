@@ -10,7 +10,7 @@ export async function generateSpeech(text: string) {
   try {
     const mp3 = await openai.audio.speech.create({
       model: 'tts-1',
-      voice: 'alloy',
+      voice: 'sage',
       input: text,
     });
 
