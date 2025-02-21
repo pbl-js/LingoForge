@@ -13,35 +13,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// enum Language {
-//   EN
-//   ES
-//   FR
-//   DE
-//   IT
-//   PT
-//   RU
-//   ZH
-//   JA
-//   KO
-// }
-
-// model Translation {
-//   id        Int      @id @default(autoincrement())
-//   language  Language
-//   content   String
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   // One-to-one relations
-//   word      Word?    @relation(fields: [wordId], references: [id], onDelete: Cascade)
-//   wordId    Int?     @unique  // unique constraint ensures one-to-one relationship
-//   useCase   UseCase? @relation(fields: [useCaseId], references: [id], onDelete: Cascade)
-//   useCaseId Int?     @unique
-//   sentence  Sentence? @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
-//   sentenceId Int?     @unique
-// }
-
 model Sentence {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())

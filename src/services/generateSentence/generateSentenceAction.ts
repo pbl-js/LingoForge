@@ -11,10 +11,16 @@ import { routes } from '@/consts/routes';
 import { getWordById } from '@/db/getWordById';
 import { currentUser } from '@clerk/nextjs/server';
 import { put, del } from '@vercel/blob';
+import { ElevenLabsClient } from 'elevenlabs';
 
 const prisma = new PrismaClient();
 
 const openai = new OpenAI();
+
+// Initialize ElevenLabs client
+const elevenLabs = new ElevenLabsClient({
+  apiKey: process.env.ELEVENLABS_API_KEY,
+});
 
 const WordWithSentencesSchema = z.object({
   word: z.string().describe('The word provided by user'),
@@ -70,12 +76,31 @@ export async function generateSentenceAction(wordId: number) {
 
   const res = await oaiGenerateSentence(word.title);
 
+  // Comment out OpenAI audio generation
+  /*
   const wordTitleAudio = await openai.audio.speech.create({
     model: 'tts-1-hd',
     voice: 'sage',
     input: word.title,
     speed: 0.7,
   });
+  */
+
+  // Add ElevenLabs audio generation
+  const wordTitleAudio = await elevenLabs.textToSpeech.convert(
+    'ThT5KcBeYPX3keUQqHPh', // Using "Bella" voice which has a happier tone
+    {
+      text: word.title,
+      model_id: 'eleven_multilingual_v2',
+      output_format: 'mp3_44100_128',
+      voice_settings: {
+        stability: 0.5,
+        similarity_boost: 0.75,
+        style: 0.7, // Increases expressiveness for a happier tone
+        use_speaker_boost: true,
+      },
+    }
+  );
 
   // Delete old audio if exists
   if (word.audioUrl) {
@@ -85,36 +110,42 @@ export async function generateSentenceAction(wordId: number) {
       console.error('Failed to delete old audio:', error);
     }
   }
+
   let audioUrl: string;
   // Save audio to Vercel Blob
   try {
-    // Get the audio as an ArrayBuffer
-    const audioBuffer = await wordTitleAudio.arrayBuffer();
+    // Convert ElevenLabs stream to buffer
+    const chunks = [];
+    for await (const chunk of wordTitleAudio) {
+      chunks.push(chunk);
+    }
+    const audioBuffer = Buffer.concat(chunks);
 
     // Make sure we have data
-    if (!audioBuffer || audioBuffer.byteLength === 0) {
-      throw new Error('Received empty audio buffer from OpenAI');
+    if (!audioBuffer || audioBuffer.length === 0) {
+      throw new Error('Received empty audio buffer from ElevenLabs');
     }
 
-    // Create a Buffer from the ArrayBuffer
-    const buffer = Buffer.from(audioBuffer);
-
     // Save to Vercel Blob with content type
-    const { url } = await put(`${word.id}-${word.title}.mp3`, buffer, {
-      access: 'public',
-      contentType: 'audio/mpeg', // Add proper content type
-    });
+    const { url } = await put(
+      `/word-audio/${word.id}-${word.title}.mp3`,
+      audioBuffer,
+      {
+        access: 'public',
+        contentType: 'audio/mpeg',
+      }
+    );
 
     // Verify the URL was created
     if (!url) {
       throw new Error('Failed to get URL from Vercel Blob');
     }
 
-    console.log('Audio saved to:', url); // Debug log
+    console.log('Audio saved to:', url);
     audioUrl = url;
   } catch (error) {
     console.error('Error saving audio:', error);
-    throw error; // Re-throw to handle in the transaction
+    throw error;
   }
 
   if (!res.choices[0]?.message.content)
