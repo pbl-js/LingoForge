@@ -1,3 +1,4 @@
+import { AUDIO_SOUNDS } from '@/consts/game-config';
 import { WordForLearning } from '@/db/getWordsForLearning';
 import { cn } from '@/lib/utils';
 import React from 'react';
@@ -9,16 +10,36 @@ export function GuessWordInSentence({
   currentWord: WordForLearning;
   nextRound: () => void;
 }) {
+  const correctAnswerAudio = new Audio(AUDIO_SOUNDS.correctAnswer);
+  const wrongAnswerAudio = new Audio(AUDIO_SOUNDS.wrongAnswer);
+  const newWordAudio = currentWord.audioUrl
+    ? new Audio(currentWord.audioUrl)
+    : undefined;
   const [correctAnswerId, setCorrectAnswerId] = React.useState<number | null>(
     null
   );
+  const [mistakeList, setMistakeList] = React.useState<number[]>([]);
 
   function onClickAnswer(answerId: number) {
-    // trigger callback
-    setCorrectAnswerId(answerId);
-    setTimeout(() => {
-      nextRound();
-    }, 500);
+    const isCorrect = answerId === currentWord.id;
+
+    if (isCorrect) {
+      correctAnswerAudio.play();
+      setCorrectAnswerId(answerId);
+
+      if (newWordAudio) {
+        setTimeout(() => {
+          newWordAudio?.play();
+        }, 800);
+      }
+
+      setTimeout(() => {
+        nextRound();
+      }, 2000);
+    } else {
+      wrongAnswerAudio.play();
+      setMistakeList((prev) => [...prev, answerId]);
+    }
   }
 
   const [answers, setAnswers] = React.useState<
@@ -72,9 +93,10 @@ export function GuessWordInSentence({
                   ? isCorrect
                     ? 'bg-green-700 text-white'
                     : 'bg-red-700 text-white'
-                  : 'text-white hover:bg-purple-300/5'
+                  : 'text-white hover:bg-purple-300/5',
+                'disabled:opacity-50 disabled:cursor-not-allowed' // Added styles for disabled status
               )}
-              disabled={correctAnswerId !== null}
+              disabled={mistakeList.includes(answer.id)}
             >
               {answer.content}
             </button>
