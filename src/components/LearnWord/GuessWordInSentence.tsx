@@ -67,7 +67,7 @@ export function GuessWordInSentence({
   const isCorrect = correctAnswerId === currentWord.id;
 
   return (
-    <div className="flex flex-col min-h-full max-w-[400px] mt-8 gap-8 grow">
+    <div className="flex flex-col min-h-full max-w-[400px] mt-8 gap-8 grow bg-red-500">
       <div className="flex flex-col items-center">
         <div className="font-semibold text-3xl text-white">
           {currentWord.title}
@@ -79,7 +79,7 @@ export function GuessWordInSentence({
         {currentWord.useCases[0]?.sentences[0]?.name.replace(
           new RegExp(currentWord.title, 'gi'),
           '_'.repeat(currentWord.title.length)
-        )}
+        )}{' '}
       </div>
       <div className="">
         <div className="flex flex-col gap-3">
