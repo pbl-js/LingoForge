@@ -1,5 +1,4 @@
 import {
-  RedirectToSignIn,
   SignInButton,
   SignUpButton,
   SignedIn,
@@ -19,7 +18,6 @@ export default function RootLayout({
         <MainNavigationMenu />
         <div className="flex items-center gap-3">
           <SignedOut>
-            <RedirectToSignIn />
             <SignInButton />
             <SignUpButton />
           </SignedOut>
