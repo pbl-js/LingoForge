@@ -1,5 +1,5 @@
 'use client';
-import { generateSentenceAction } from '@/services/generateSentence/generateSentenceAction';
+import { generateSentenceAction } from '@/services/generateWordData/generateWordDataAction';
 import { Button } from '../ui/button';
 import React from 'react';
 

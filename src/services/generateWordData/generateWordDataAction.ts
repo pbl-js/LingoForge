@@ -1,10 +1,5 @@
 'use server';
 
-import OpenAI from 'openai';
-import React from 'react';
-import { zodResponseFormat } from 'openai/helpers/zod';
-import { z } from 'zod';
-import { GENERATE_SENTENCE_PROMPT } from '@/consts/prompts';
 import { PrismaClient } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { routes } from '@/consts/routes';
@@ -12,47 +7,14 @@ import { getWordById } from '@/db/getWordById';
 import { currentUser } from '@clerk/nextjs/server';
 import { put, del } from '@vercel/blob';
 import { ElevenLabsClient } from 'elevenlabs';
+import { wordAiText, WordAiTextSchema } from '../wordAiText/wordAiText';
 
 const prisma = new PrismaClient();
-
-const openai = new OpenAI();
 
 // Initialize ElevenLabs client
 const elevenLabs = new ElevenLabsClient({
   apiKey: process.env.ELEVENLABS_API_KEY,
 });
-
-const WordWithSentencesSchema = z.object({
-  word: z.string().describe('The word provided by user'),
-  similarWords: z.array(z.string()),
-  usagesList: z.array(
-    z.object({
-      usageTitle: z.string(),
-      usageDescription: z.string(),
-      sentencesList: z.array(z.object({ name: z.string() })),
-    })
-  ),
-});
-
-export type WordWithSentences = z.infer<typeof WordWithSentencesSchema>;
-
-const oaiGenerateSentence = React.cache((sentence: string) =>
-  openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [
-      {
-        role: 'developer',
-        content: GENERATE_SENTENCE_PROMPT,
-      },
-      {
-        role: 'user',
-        content: sentence,
-      },
-    ],
-    response_format: zodResponseFormat(WordWithSentencesSchema, 'sentence'),
-    store: true,
-  })
-);
 
 export async function generateSentenceAction(wordId: number) {
   const user = await currentUser();
@@ -74,7 +36,7 @@ export async function generateSentenceAction(wordId: number) {
     };
   }
 
-  const res = await oaiGenerateSentence(word.title);
+  const res = await wordAiText(word.title);
 
   // Comment out OpenAI audio generation
   /*
@@ -151,7 +113,7 @@ export async function generateSentenceAction(wordId: number) {
   if (!res.choices[0]?.message.content)
     throw new Error('No sentences for provided word');
 
-  const parsedRes = WordWithSentencesSchema.parse(
+  const parsedRes = WordAiTextSchema.parse(
     JSON.parse(res.choices[0]?.message.content)
   );
 
