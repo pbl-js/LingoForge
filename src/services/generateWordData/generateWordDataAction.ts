@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { routes } from '@/consts/routes';
 import { getWordById } from '@/db/getWordById';
-import { currentUser } from '@clerk/nextjs/server';
+import { auth } from '@clerk/nextjs/server';
 import { put, del } from '@vercel/blob';
 import { ElevenLabsClient } from 'elevenlabs';
 import { wordAiText, WordAiTextSchema } from '../wordAiText/wordAiText';
@@ -17,16 +17,14 @@ const elevenLabs = new ElevenLabsClient({
 });
 
 export async function generateSentenceAction(wordId: number) {
-  const user = await currentUser();
+  const { userId } = await auth();
 
-  if (!user) {
-    return {
-      error: 'User not found',
-    };
+  if (!userId) {
+    throw new Error('Unauthorized');
   }
 
   const word = await getWordById(prisma, {
-    userId: user.id,
+    userId: userId,
     wordId: wordId,
   });
 

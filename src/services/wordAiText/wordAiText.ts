@@ -1,4 +1,4 @@
-import { GENERATE_SENTENCE_PROMPT } from '@/consts/prompts';
+import { WORD_AI_TEXT } from '@/consts/prompts';
 import OpenAI from 'openai';
 import { zodResponseFormat } from 'openai/helpers/zod.mjs';
 import { z } from 'zod';
@@ -10,9 +10,9 @@ export const WordAiTextSchema = z.object({
   similarWords: z.array(z.string()),
   usagesList: z.array(
     z.object({
-      usageTitle: z.string(),
-      usageDescription: z.string(),
-      sentencesList: z.array(z.object({ name: z.string() })),
+      usageTitle: z.object({ en: z.string(), pl: z.string() }),
+      usageDescription: z.object({ en: z.string(), pl: z.string() }),
+      sentencesList: z.array(z.object({ en: z.string(), pl: z.string() })),
     })
   ),
 });
@@ -25,7 +25,7 @@ export const wordAiText = (sentence: string) =>
     messages: [
       {
         role: 'developer',
-        content: GENERATE_SENTENCE_PROMPT,
+        content: WORD_AI_TEXT,
       },
       {
         role: 'user',
