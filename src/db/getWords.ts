@@ -8,7 +8,10 @@ export async function getWords(
     userId: string;
   }
 ) {
-  const words = await prisma.word.findMany({ where: { userId } });
+  const words = await prisma.word.findMany({
+    where: { userId },
+    include: { translations: true },
+  });
 
   return words;
 }

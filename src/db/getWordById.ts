@@ -16,10 +16,21 @@ export async function getWordById(
       userId,
     },
     include: {
-      similarWords: true,
+      translations: true,
+      similarWords: {
+        include: {
+          translations: true,
+        },
+      },
       useCases: {
         include: {
-          sentences: true,
+          titleTranslations: true,
+          descriptionTranslations: true,
+          sentences: {
+            include: {
+              translations: true,
+            },
+          },
         },
       },
     },

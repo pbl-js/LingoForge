@@ -13,42 +13,66 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Sentence {
+enum Language {
+  EN
+  PL
+}
+
+model Translation {
   id        Int      @id @default(autoincrement())
+  language  Language
+  content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  name      String
-  useCase   UseCase  @relation(fields: [useCaseId], references: [id])
-  useCaseId Int
+  audioUrl  String?
+
+  word                 Word?        @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  wordId               Int?
+  useCaseTitle         UseCase?     @relation("UseCaseTitleTranslation", fields: [useCaseTitleId], references: [id], onDelete: Cascade)
+  useCaseTitleId       Int?
+  useCaseDescription   UseCase?     @relation("UseCaseDescriptionTranslation", fields: [useCaseDescriptionId], references: [id], onDelete: Cascade)
+  useCaseDescriptionId Int?
+  sentence             Sentence?    @relation(fields: [sentenceId], references: [id], onDelete: Cascade)
+  sentenceId           Int?
+  similarWord          SimilarWord? @relation(fields: [similarWordId], references: [id], onDelete: Cascade)
+  similarWordId        Int?
+}
+
+model Sentence {
+  id           Int           @id @default(autoincrement())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  useCase      UseCase       @relation(fields: [useCaseId], references: [id])
+  useCaseId    Int
+  translations Translation[]
 }
 
 model UseCase {
-  id          Int        @id @default(autoincrement())
-  title       String
-  description String
-  wordId      Int
-  word        Word       @relation(fields: [wordId], references: [id])
-  sentences   Sentence[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id                      Int           @id @default(autoincrement())
+  wordId                  Int
+  word                    Word          @relation(fields: [wordId], references: [id])
+  sentences               Sentence[]
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+  titleTranslations       Translation[] @relation("UseCaseTitleTranslation")
+  descriptionTranslations Translation[] @relation("UseCaseDescriptionTranslation")
 }
 
 model SimilarWord {
-  id        Int      @id @default(autoincrement())
-  content   String
-  wordId    Int
-  word      Word     @relation(fields: [wordId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int           @id @default(autoincrement())
+  wordId       Int
+  word         Word          @relation(fields: [wordId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  translations Translation[]
 }
 
 model Word {
   id           Int           @id @default(autoincrement())
-  title        String
   userId       String
   useCases     UseCase[]
   similarWords SimilarWord[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  audioUrl     String?
+  translations Translation[]
 }

@@ -5,14 +5,19 @@ import { z } from 'zod';
 
 const openai = new OpenAI();
 
+const translationSchema = z.object({
+  en: z.string(),
+  pl: z.string(),
+});
+
 export const WordAiTextSchema = z.object({
   word: z.string().describe('The word provided by user'),
-  similarWords: z.array(z.string()),
+  similarWords: z.array(translationSchema),
   usagesList: z.array(
     z.object({
-      usageTitle: z.object({ en: z.string(), pl: z.string() }),
-      usageDescription: z.object({ en: z.string(), pl: z.string() }),
-      sentencesList: z.array(z.object({ en: z.string(), pl: z.string() })),
+      usageTitle: translationSchema,
+      usageDescription: translationSchema,
+      sentencesList: z.array(translationSchema),
     })
   ),
 });

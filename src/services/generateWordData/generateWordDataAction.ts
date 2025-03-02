@@ -34,23 +34,22 @@ export async function generateSentenceAction(wordId: number) {
     };
   }
 
-  const res = await wordAiText(word.title);
+  // Get the English translation of the word
+  const englishTranslation = word.translations.find(
+    (t) => t.language === 'EN'
+  )?.content;
 
-  // Comment out OpenAI audio generation
-  /*
-  const wordTitleAudio = await openai.audio.speech.create({
-    model: 'tts-1-hd',
-    voice: 'sage',
-    input: word.title,
-    speed: 0.7,
-  });
-  */
+  if (!englishTranslation) {
+    throw new Error('Word has no English translation');
+  }
+
+  const res = await wordAiText(englishTranslation);
 
   // Add ElevenLabs audio generation
   const wordTitleAudio = await elevenLabs.textToSpeech.convert(
     'ThT5KcBeYPX3keUQqHPh', // Using "Bella" voice which has a happier tone
     {
-      text: word.title,
+      text: englishTranslation,
       model_id: 'eleven_multilingual_v2',
       output_format: 'mp3_44100_128',
       voice_settings: {
@@ -62,10 +61,13 @@ export async function generateSentenceAction(wordId: number) {
     }
   );
 
+  // Find audio URL in translations if it exists - we need to simplify this condition
+  const audioTranslation = word.translations.find((t) => t.language === 'EN');
+
   // Delete old audio if exists
-  if (word.audioUrl) {
+  if (audioTranslation?.audioUrl) {
     try {
-      await del(word.audioUrl);
+      await del(audioTranslation.audioUrl);
     } catch (error) {
       console.error('Failed to delete old audio:', error);
     }
@@ -88,7 +90,7 @@ export async function generateSentenceAction(wordId: number) {
 
     // Save to Vercel Blob with content type
     const { url } = await put(
-      `/word-audio/${word.id}-${word.title}.mp3`,
+      `/word-audio/${word.id}-${englishTranslation}.mp3`,
       audioBuffer,
       {
         access: 'public',
@@ -106,6 +108,11 @@ export async function generateSentenceAction(wordId: number) {
   } catch (error) {
     console.error('Error saving audio:', error);
     throw error;
+  }
+
+  // Make sure audioUrl is a string
+  if (typeof audioUrl !== 'string' || !audioUrl) {
+    throw new Error('Failed to generate a valid audio URL');
   }
 
   if (!res.choices[0]?.message.content)
@@ -138,35 +145,175 @@ export async function generateSentenceAction(wordId: number) {
         },
       });
 
+      // Create or update audio translation
+      if (audioTranslation) {
+        console.log(
+          'Updating existing translation with ID:',
+          audioTranslation.id
+        );
+        await tx.translation.update({
+          where: { id: audioTranslation.id },
+          data: {
+            audioUrl: audioUrl,
+          },
+        });
+      } else {
+        console.log('Creating new translation with audio URL');
+        // Create a new audio translation
+        await tx.translation.create({
+          data: {
+            language: 'EN',
+            content: englishTranslation,
+            audioUrl: audioUrl,
+            wordId: wordId,
+          },
+        });
+      }
+
       // Create new useCases with sentences and similar words
       return tx.word.update({
         where: {
           id: wordId,
         },
         data: {
-          audioUrl: audioUrl,
           similarWords: {
-            create: parsedRes.similarWords.map((word) => ({
-              content: word,
-            })),
+            create: parsedRes.similarWords.map((word) => {
+              // Check if word is an object with en/pl properties or a simple string
+              const wordContent =
+                typeof word === 'object' && word.en ? word.en : word;
+              return {
+                translations: {
+                  create: [
+                    {
+                      language: 'EN',
+                      content:
+                        typeof wordContent === 'string'
+                          ? wordContent
+                          : String(wordContent),
+                    },
+                    // Add Polish translation if available
+                    ...(typeof word === 'object' && word.pl
+                      ? [
+                          {
+                            language: 'PL',
+                            content:
+                              typeof word.pl === 'string'
+                                ? word.pl
+                                : String(word.pl),
+                          },
+                        ]
+                      : []),
+                  ],
+                },
+              };
+            }),
           },
           useCases: {
-            create: parsedRes.usagesList.map((usage) => ({
-              title: usage.usageTitle,
-              description: usage.usageDescription,
-              sentences: {
-                create: usage.sentencesList.map((sentence) => ({
-                  name: sentence.name,
-                })),
-              },
-            })),
+            create: parsedRes.usagesList.map((usage) => {
+              // Handle title which might be an object or string
+              const titleContent =
+                typeof usage.usageTitle === 'object' && usage.usageTitle.en
+                  ? usage.usageTitle.en
+                  : usage.usageTitle;
+
+              // Handle description which might be an object or string
+              const descContent =
+                typeof usage.usageDescription === 'object' &&
+                usage.usageDescription.en
+                  ? usage.usageDescription.en
+                  : usage.usageDescription;
+
+              return {
+                titleTranslations: {
+                  create: [
+                    {
+                      language: 'EN',
+                      content:
+                        typeof titleContent === 'string'
+                          ? titleContent
+                          : String(titleContent),
+                    },
+                    // Add Polish translation if available
+                    ...(typeof usage.usageTitle === 'object' &&
+                    usage.usageTitle.pl
+                      ? [
+                          {
+                            language: 'PL',
+                            content:
+                              typeof usage.usageTitle.pl === 'string'
+                                ? usage.usageTitle.pl
+                                : String(usage.usageTitle.pl),
+                          },
+                        ]
+                      : []),
+                  ],
+                },
+                descriptionTranslations: {
+                  create: [
+                    {
+                      language: 'EN',
+                      content:
+                        typeof descContent === 'string'
+                          ? descContent
+                          : String(descContent),
+                    },
+                    // Add Polish translation if available
+                    ...(typeof usage.usageDescription === 'object' &&
+                    usage.usageDescription.pl
+                      ? [
+                          {
+                            language: 'PL',
+                            content:
+                              typeof usage.usageDescription.pl === 'string'
+                                ? usage.usageDescription.pl
+                                : String(usage.usageDescription.pl),
+                          },
+                        ]
+                      : []),
+                  ],
+                },
+                sentences: {
+                  create: usage.sentencesList.map((sentence) => ({
+                    translations: {
+                      create: [
+                        {
+                          language: 'EN',
+                          content:
+                            typeof sentence.en === 'string'
+                              ? sentence.en
+                              : String(sentence.en),
+                        },
+                        {
+                          language: 'PL',
+                          content:
+                            typeof sentence.pl === 'string'
+                              ? sentence.pl
+                              : String(sentence.pl),
+                        },
+                      ],
+                    },
+                  })),
+                },
+              };
+            }),
           },
         },
         include: {
-          similarWords: true,
+          translations: true,
+          similarWords: {
+            include: {
+              translations: true,
+            },
+          },
           useCases: {
             include: {
-              sentences: true,
+              titleTranslations: true,
+              descriptionTranslations: true,
+              sentences: {
+                include: {
+                  translations: true,
+                },
+              },
             },
           },
         },

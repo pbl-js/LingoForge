@@ -1,6 +1,7 @@
 import { AddWordButton } from '@/components/AddWordButton/AddWordButton';
 import { WordListItem } from '@/components/WordList/WordListItem';
 import { getWords } from '@/db/getWords';
+import { getMatchTranslation } from '@/lib/getMatchTranslation';
 import { currentUser, User } from '@clerk/nextjs/server';
 import { PrismaClient } from '@prisma/client';
 
@@ -24,9 +25,15 @@ export default async function Layout({
           <AddWordButton>Add Word</AddWordButton>
         </div>
         <div className="flex flex-col gap-3 grow w-full">
-          {wordList.map((word) => (
-            <WordListItem key={word.id} id={word.id} title={word.title} />
-          ))}
+          {wordList.map((word) => {
+            return (
+              <WordListItem
+                key={word.id}
+                id={word.id}
+                title={getMatchTranslation(word.translations, 'EN')}
+              />
+            );
+          })}
         </div>
       </div>
       {children}

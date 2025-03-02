@@ -45,12 +45,20 @@ export default async function Page({
 
   if (!word) return <NoWord />;
 
+  // Get the English translation for the word title
+  const wordTitle =
+    word.translations.find((t) => t.language === 'EN')?.content || 'Untitled';
+
+  // Find audio URL in translations if it exists
+  const audioTranslation = word.translations.find((t) => t.language === 'EN');
+  const audioUrl = audioTranslation?.audioUrl;
+
   return (
     <div className="flex flex-col gap-3 items-start">
       <WordDetailsHeader
-        title={word.title}
+        title={wordTitle}
         wordId={word.id}
-        audioUrl={word.audioUrl}
+        audioUrl={audioUrl || undefined}
       />
       <div className="flex flex-col p-3 rounded-xl bg-purple-900 gap-3 grow w-full">
         {/* Display similar words */}
@@ -63,7 +71,8 @@ export default async function Page({
                   key={similarWord.id}
                   className="text-sm text-gray-400 list-disc list-inside"
                 >
-                  {similarWord.content}
+                  {similarWord.translations.find((t) => t.language === 'EN')
+                    ?.content || 'Unknown'}
                 </li>
               ))}
             </ul>
@@ -79,19 +88,29 @@ export default async function Page({
           ) : (
             word.useCases.map((useCase) => (
               <div key={useCase.id} className="text-white py-1">
-                {useCase.title}
-                <p className="text-gray-400">{useCase.description}</p>
+                {useCase.titleTranslations.find((t) => t.language === 'EN')
+                  ?.content || 'Untitled'}
+                <p className="text-gray-400">
+                  {useCase.descriptionTranslations.find(
+                    (t) => t.language === 'EN'
+                  )?.content || 'No description'}
+                </p>
                 <ul className="flex flex-col gap-1 mt-2 pl-4">
-                  {useCase.sentences.map((sentence) => (
-                    <li
-                      key={sentence.id}
-                      className="text-sm text-gray-300 list-disc list-inside flex items-center"
-                    >
-                      {sentence.name}
-                      <SpeechButton text={sentence.name} />
-                      <OpenAISpeechButton text={sentence.name} />
-                    </li>
-                  ))}
+                  {useCase.sentences.map((sentence) => {
+                    const sentenceText =
+                      sentence.translations.find((t) => t.language === 'EN')
+                        ?.content || '';
+                    return (
+                      <li
+                        key={sentence.id}
+                        className="text-sm text-gray-300 list-disc list-inside flex items-center"
+                      >
+                        {sentenceText}
+                        <SpeechButton text={sentenceText} />
+                        <OpenAISpeechButton text={sentenceText} />
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ))

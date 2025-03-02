@@ -26,11 +26,21 @@ export async function POST(req: NextRequest) {
     }
 
     const prisma = new PrismaClient();
-    const word = await prisma.word.findFirst({
-      where: { title: body.word, userId: user.id },
+
+    // Check if word already exists by looking for a word with the same English translation
+    const existingWord = await prisma.word.findFirst({
+      where: {
+        userId: user.id,
+        translations: {
+          some: {
+            language: 'EN',
+            content: body.word,
+          },
+        },
+      },
     });
 
-    if (word) {
+    if (existingWord) {
       return NextResponse.json(
         { message: 'Word already created' },
         {
@@ -39,10 +49,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Create a new word with an English translation
     await prisma.word.create({
       data: {
-        title: body.word,
         userId: user.id,
+        translations: {
+          create: [
+            {
+              language: 'EN',
+              content: body.word,
+            },
+          ],
+        },
       },
     });
 

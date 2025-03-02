@@ -1,7 +1,6 @@
 'use client';
 import { GenerateSentenceButton } from '../GenerateSentenceButton/GenerateSentenceButton';
 import React from 'react';
-import { useTransition } from 'react';
 import { OpenAISpeechButton } from '../OpenAISpeechButton/OpenAISpeechButton';
 import { Volume2 } from 'lucide-react';
 import { Button } from '../ui/button';
@@ -9,7 +8,7 @@ import { Button } from '../ui/button';
 type WordDetailsHeaderProps = {
   title: string;
   wordId: number;
-  audioUrl?: string | null;
+  audioUrl?: string;
 };
 
 export function WordDetailsHeader({
@@ -17,7 +16,6 @@ export function WordDetailsHeader({
   wordId,
   audioUrl,
 }: WordDetailsHeaderProps) {
-  const [isPending, startTransition] = useTransition();
   const [audio, setAudio] = React.useState<HTMLAudioElement | null>(null);
 
   // Initialize audio on mount or when URL changes
@@ -32,18 +30,16 @@ export function WordDetailsHeader({
     }
   }, [audioUrl]);
 
-  const playAudio = () => {
-    startTransition(async () => {
-      try {
-        if (!audio) return;
+  const playAudio = async () => {
+    try {
+      if (!audio) return;
 
-        // Reset audio to start if it was already played
-        audio.currentTime = 0;
-        await audio.play();
-      } catch (error) {
-        console.error('Failed to play audio:', error);
-      }
-    });
+      // Reset audio to start if it was already played
+      audio.currentTime = 0;
+      await audio.play();
+    } catch (error) {
+      console.error('Failed to play audio:', error);
+    }
   };
 
   return (
@@ -53,13 +49,8 @@ export function WordDetailsHeader({
       </div>
       <div className="flex items-center gap-2">
         {audioUrl && (
-          <Button
-            onClick={playAudio}
-            disabled={isPending}
-            className=""
-            title="Play stored audio"
-          >
-            <Volume2 /> {isPending ? 'Playing...' : 'pre-gen audio'}
+          <Button onClick={playAudio} className="" title="Play stored audio">
+            <Volume2 /> pre-gen audio
           </Button>
         )}
         <OpenAISpeechButton text={title} />
