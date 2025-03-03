@@ -10,5 +10,5 @@ export function getMatchTranslation(
     throw new Error(`No translation found for language: ${language}`);
   }
 
-  return translation.content;
+  return translation;
 }

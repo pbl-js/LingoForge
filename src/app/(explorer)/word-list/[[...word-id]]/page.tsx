@@ -7,6 +7,7 @@ import { NoWord } from './NoWord';
 import { WordDetailsHeader } from '@/components/WordDetailsHeader/WordDetailsHeader';
 import { SpeechButton } from '@/components/SpeechButton/SpeechButton';
 import { OpenAISpeechButton } from '@/components/OpenAISpeechButton/OpenAISpeechButton';
+import { getMatchTranslation } from '@/lib/getMatchTranslation';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,13 +46,10 @@ export default async function Page({
 
   if (!word) return <NoWord />;
 
-  // Get the English translation for the word title
-  const wordTitle =
-    word.translations.find((t) => t.language === 'EN')?.content || 'Untitled';
-
-  // Find audio URL in translations if it exists
-  const audioTranslation = word.translations.find((t) => t.language === 'EN');
-  const audioUrl = audioTranslation?.audioUrl;
+  const { content: wordTitle, audioUrl } = getMatchTranslation(
+    word.translations,
+    'EN'
+  );
 
   return (
     <div className="flex flex-col gap-3 items-start">
@@ -88,18 +86,19 @@ export default async function Page({
           ) : (
             word.useCases.map((useCase) => (
               <div key={useCase.id} className="text-white py-1">
-                {useCase.titleTranslations.find((t) => t.language === 'EN')
-                  ?.content || 'Untitled'}
+                {getMatchTranslation(useCase.titleTranslations, 'EN').content}
                 <p className="text-gray-400">
-                  {useCase.descriptionTranslations.find(
-                    (t) => t.language === 'EN'
-                  )?.content || 'No description'}
+                  {
+                    getMatchTranslation(useCase.descriptionTranslations, 'EN')
+                      .content
+                  }
                 </p>
                 <ul className="flex flex-col gap-1 mt-2 pl-4">
                   {useCase.sentences.map((sentence) => {
-                    const sentenceText =
-                      sentence.translations.find((t) => t.language === 'EN')
-                        ?.content || '';
+                    const sentenceText = getMatchTranslation(
+                      sentence.translations,
+                      'EN'
+                    ).content;
                     return (
                       <li
                         key={sentence.id}

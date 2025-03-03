@@ -30,7 +30,7 @@ export default async function Layout({
               <WordListItem
                 key={word.id}
                 id={word.id}
-                title={getMatchTranslation(word.translations, 'EN')}
+                title={getMatchTranslation(word.translations, 'EN').content}
               />
             );
           })}

@@ -1,6 +1,7 @@
 import { AUDIO_SOUNDS } from '@/consts/game-config';
 import { WordForLearning } from '@/db/getWordsForLearning';
 import { cn } from '@/lib/utils';
+import { getMatchTranslation } from '@/lib/getMatchTranslation';
 import React from 'react';
 
 export function GuessWordInSentence({
@@ -14,17 +15,12 @@ export function GuessWordInSentence({
   const wrongAnswerAudio = new Audio(AUDIO_SOUNDS.wrongAnswer);
 
   // Get the English translation for the word title
-  const wordTitle =
-    currentWord.translations.find((t) => t.language === 'EN')?.content ||
-    'Untitled';
-
-  // Find audio URL in translations
-  const audioTranslation = currentWord.translations.find(
-    (t) => t.language === 'EN'
+  const { content: wordTitle, audioUrl } = getMatchTranslation(
+    currentWord.translations,
+    'EN'
   );
-  const newWordAudio = audioTranslation?.audioUrl
-    ? new Audio(audioTranslation.audioUrl)
-    : undefined;
+
+  const newWordAudio = audioUrl ? new Audio(audioUrl) : undefined;
 
   const [correctAnswerId, setCorrectAnswerId] = React.useState<number | null>(
     null
@@ -67,9 +63,7 @@ export function GuessWordInSentence({
     const newAnswers = [
       ...shuffledSimilarWords.map((word) => ({
         id: word.id,
-        content:
-          word.translations.find((t) => t.language === 'EN')?.content ||
-          'Unknown',
+        content: getMatchTranslation(word.translations, 'EN').content,
       })),
       { id: currentWord.id, content: wordTitle },
     ].sort(() => Math.random() - 0.5);
@@ -79,14 +73,19 @@ export function GuessWordInSentence({
 
   const isCorrect = correctAnswerId === currentWord.id;
 
+  if (!currentWord.useCases[0]) throw new Error('No use case found');
+  if (!currentWord.useCases[0].sentences[0])
+    throw new Error('No use case found');
+
   // Get the use case title and sentence
-  const useCaseTitle =
-    currentWord.useCases[0]?.titleTranslations.find((t) => t.language === 'EN')
-      ?.content || '';
-  const sentenceText =
-    currentWord.useCases[0]?.sentences[0]?.translations.find(
-      (t) => t.language === 'EN'
-    )?.content || '';
+  const useCaseTitle = getMatchTranslation(
+    currentWord.useCases[0]?.titleTranslations,
+    'EN'
+  ).content;
+  const sentenceText = getMatchTranslation(
+    currentWord.useCases[0]?.sentences[0]?.translations,
+    'EN'
+  ).content;
 
   // Replace the word in the sentence with underscores
   const maskedSentence = sentenceText.replace(

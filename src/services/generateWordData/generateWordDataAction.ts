@@ -8,6 +8,7 @@ import { auth } from '@clerk/nextjs/server';
 import { put, del } from '@vercel/blob';
 import { ElevenLabsClient } from 'elevenlabs';
 import { wordAiText, WordAiTextSchema } from '../wordAiText/wordAiText';
+import { getMatchTranslation } from '@/lib/getMatchTranslation';
 
 const prisma = new PrismaClient();
 
@@ -34,14 +35,10 @@ export async function generateSentenceAction(wordId: number) {
     };
   }
 
-  // Get the English translation of the word
-  const englishTranslation = word.translations.find(
-    (t) => t.language === 'EN'
-  )?.content;
-
-  if (!englishTranslation) {
-    throw new Error('Word has no English translation');
-  }
+  const englishTranslation = getMatchTranslation(
+    word.translations,
+    'EN'
+  ).content;
 
   const res = await wordAiText(englishTranslation);
 
@@ -62,7 +59,7 @@ export async function generateSentenceAction(wordId: number) {
   );
 
   // Find audio URL in translations if it exists - we need to simplify this condition
-  const audioTranslation = word.translations.find((t) => t.language === 'EN');
+  const audioTranslation = getMatchTranslation(word.translations, 'EN');
 
   // Delete old audio if exists
   if (audioTranslation?.audioUrl) {

@@ -18,7 +18,7 @@ export async function deleteWordAction(wordId: number) {
 
     const prisma = new PrismaClient();
 
-    // Get the word to access its audioUrl before deletion
+    // Get the word to access its translations before deletion
     const word = await getWordById(prisma, {
       userId: user.id,
       wordId: wordId,
@@ -28,7 +28,13 @@ export async function deleteWordAction(wordId: number) {
       throw new Error('Word not found');
     }
 
+    // Find translations with audio URLs
+    const translationsWithAudio = word.translations.filter(
+      (translation) => translation.audioUrl
+    );
+
     await prisma.$transaction(async (tx) => {
+      // Delete all related records
       await tx.sentence.deleteMany({
         where: {
           useCase: {
@@ -49,23 +55,31 @@ export async function deleteWordAction(wordId: number) {
         },
       });
 
+      await tx.translation.deleteMany({
+        where: {
+          wordId: wordId,
+        },
+      });
+
       await tx.word.delete({
         where: {
           id: wordId,
           userId: user.id,
         },
       });
+    });
 
-      // Delete the audio file after successful database deletion
-      if (word.audioUrl) {
+    // Delete the audio files after successful database deletion
+    for (const translation of translationsWithAudio) {
+      if (translation.audioUrl) {
         try {
-          await del(word.audioUrl);
+          await del(translation.audioUrl);
         } catch (error) {
           console.error('Failed to delete audio file:', error);
-          // Decide if you want to throw or continue
+          // Continue with other deletions even if one fails
         }
       }
-    });
+    }
 
     revalidatePath(routes.wordList);
     redirect(routes.wordList);
