@@ -12,9 +12,20 @@ export function GuessWordInSentence({
 }) {
   const correctAnswerAudio = new Audio(AUDIO_SOUNDS.correctAnswer);
   const wrongAnswerAudio = new Audio(AUDIO_SOUNDS.wrongAnswer);
-  const newWordAudio = currentWord.audioUrl
-    ? new Audio(currentWord.audioUrl)
+
+  // Get the English translation for the word title
+  const wordTitle =
+    currentWord.translations.find((t) => t.language === 'EN')?.content ||
+    'Untitled';
+
+  // Find audio URL in translations
+  const audioTranslation = currentWord.translations.find(
+    (t) => t.language === 'EN'
+  );
+  const newWordAudio = audioTranslation?.audioUrl
+    ? new Audio(audioTranslation.audioUrl)
     : undefined;
+
   const [correctAnswerId, setCorrectAnswerId] = React.useState<number | null>(
     null
   );
@@ -56,52 +67,63 @@ export function GuessWordInSentence({
     const newAnswers = [
       ...shuffledSimilarWords.map((word) => ({
         id: word.id,
-        content: word.content,
+        content:
+          word.translations.find((t) => t.language === 'EN')?.content ||
+          'Unknown',
       })),
-      { id: currentWord.id, content: currentWord.title },
+      { id: currentWord.id, content: wordTitle },
     ].sort(() => Math.random() - 0.5);
 
     setAnswers(newAnswers);
-  }, [currentWord]);
+  }, [currentWord, wordTitle]);
 
   const isCorrect = correctAnswerId === currentWord.id;
 
+  // Get the use case title and sentence
+  const useCaseTitle =
+    currentWord.useCases[0]?.titleTranslations.find((t) => t.language === 'EN')
+      ?.content || '';
+  const sentenceText =
+    currentWord.useCases[0]?.sentences[0]?.translations.find(
+      (t) => t.language === 'EN'
+    )?.content || '';
+
+  // Replace the word in the sentence with underscores
+  const maskedSentence = sentenceText.replace(
+    new RegExp(wordTitle, 'gi'),
+    '_'.repeat(wordTitle.length)
+  );
+
   return (
-    <div className="flex flex-col min-h-full max-w-[400px] mt-8 gap-8 grow bg-red-500">
+    <div className="flex flex-col h-full">
       <div className="flex flex-col items-center">
-        <div className="font-semibold text-3xl text-white">
-          {currentWord.title}
-        </div>
-        <div className="text-purple-200">{currentWord.useCases[0]?.title}</div>
+        <div className="font-semibold text-3xl text-white">{wordTitle}</div>
+        <div className="text-purple-200">{useCaseTitle}</div>
       </div>
 
       <div className="text-white text-4xl font-medium grow">
-        {currentWord.useCases[0]?.sentences[0]?.name.replace(
-          new RegExp(currentWord.title, 'gi'),
-          '_'.repeat(currentWord.title.length)
-        )}{' '}
+        {maskedSentence}{' '}
       </div>
-      <div className="">
-        <div className="flex flex-col gap-3">
-          {answers.map((answer) => (
-            <button
-              onClick={() => onClickAnswer(answer.id)}
-              key={answer.id}
-              className={cn(
-                'w-full px-4 text-lg rounded-full transition-colors border-white border-2 font-medium text-center py-3 capitalize',
-                correctAnswerId === answer.id
-                  ? isCorrect
-                    ? 'bg-green-700 text-white'
-                    : 'bg-red-700 text-white'
-                  : 'text-white hover:bg-purple-300/5',
-                'disabled:opacity-50 disabled:cursor-not-allowed' // Added styles for disabled status
-              )}
-              disabled={mistakeList.includes(answer.id)}
-            >
-              {answer.content}
-            </button>
-          ))}
-        </div>
+
+      <div className="flex flex-col gap-3 mt-auto">
+        {answers.map((answer) => (
+          <button
+            onClick={() => onClickAnswer(answer.id)}
+            key={answer.id}
+            className={cn(
+              'w-full px-4 text-lg rounded-full transition-colors border-white border-2 font-medium text-center py-3 capitalize',
+              correctAnswerId === answer.id
+                ? isCorrect
+                  ? 'bg-green-700 text-white'
+                  : 'bg-red-700 text-white'
+                : 'text-white hover:bg-purple-300/5',
+              'disabled:opacity-50 disabled:cursor-not-allowed' // Added styles for disabled status
+            )}
+            disabled={mistakeList.includes(answer.id)}
+          >
+            {answer.content}
+          </button>
+        ))}
       </div>
     </div>
   );

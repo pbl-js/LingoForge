@@ -1,15 +1,15 @@
 'use client';
 
 import React from 'react';
-import { WordForLearning, WordsForLearning } from '@/db/getWordsForLearning';
+import { WordForLearning } from '@/db/getWordsForLearning';
 import { GuessWordInSentence } from './GuessWordInSentence';
 
-export function LearnWord({ wordsList }: { wordsList: WordsForLearning }) {
-  if (wordsList.length === 0) {
+export function LearnWord({ wordsList }: { wordsList: WordForLearning[] }) {
+  if (wordsList.length === 0 || wordsList[0] === undefined) {
     throw new Error('LearnWord component must be used with wordsList');
   }
 
-  const firstWord = wordsList[0] as WordForLearning;
+  const firstWord = wordsList[0];
   const [currentWordId, setCurrentWordId] = React.useState<number>(
     firstWord.id
   );
@@ -22,6 +22,9 @@ export function LearnWord({ wordsList }: { wordsList: WordsForLearning }) {
       (word) => word.id !== currentWordId
     );
     const randomIndex = Math.floor(Math.random() * availableWords.length);
+    console.log('test: ', availableWords, randomIndex);
+    console.log('currentWordId: ', currentWordId);
+    console.log('wordsList: ', wordsList);
     if (!availableWords[randomIndex]) throw new Error('Random index is 0');
     setCurrentWordId(availableWords[randomIndex].id);
   }

@@ -1,32 +1,49 @@
-import { ArrayElement } from '@/lib/types';
 import { Prisma, PrismaClient } from '@prisma/client';
 
 export async function getWordsForLearning(
   prisma: PrismaClient,
   {
     userId,
+    limit = 10,
   }: {
     userId: string;
+    limit?: number;
   }
 ) {
-  const words = await prisma.word.findMany({
+  return prisma.word.findMany({
     where: {
       userId,
+      useCases: {
+        some: {
+          sentences: {
+            some: {},
+          },
+        },
+      },
     },
+    take: limit,
     include: {
-      similarWords: true,
+      translations: true,
+      similarWords: {
+        include: {
+          translations: true,
+        },
+      },
       useCases: {
         include: {
-          sentences: true,
+          titleTranslations: true,
+          descriptionTranslations: true,
+          sentences: {
+            include: {
+              translations: true,
+            },
+          },
         },
       },
     },
   });
-
-  return words;
 }
 
-export type WordsForLearning = Prisma.PromiseReturnType<
+export type WordForLearning = Prisma.PromiseReturnType<
   typeof getWordsForLearning
->;
-export type WordForLearning = ArrayElement<WordsForLearning>;
+>[number];
