@@ -39,3 +39,5 @@ Follow these rules when you write code:
 - Use Shadcn UI components for all UI components.
 - Use the latest version of React, NextJS, TailwindCSS, TypeScript, and the latest version of Shadcn UI components.
 - Try avoid export default, use named exports instead. Use default exports only when it's required by framework or when it's the only way to solve the problem.
+- Use shadcn@latest instead of shadcn-ui@latest
+- Add "use client" to the top of all client components.

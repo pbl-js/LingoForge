@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { ClerkProvider, RedirectToSignIn, SignedOut } from '@clerk/nextjs';
 import './globals.css';
 import { auth } from '@clerk/nextjs/server';
+import { SelectedSentencesProvider } from '@/contexts/SelectedSentencesContext';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -28,16 +29,18 @@ export default async function RootLayout({
 
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-purple-950`}
-        >
-          <SignedOut>
-            <RedirectToSignIn />
-          </SignedOut>
-          {children}
-        </body>
-      </html>
+      <SelectedSentencesProvider>
+        <html lang="en">
+          <body
+            className={`${geistSans.variable} ${geistMono.variable} antialiased bg-purple-950`}
+          >
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+            {children}
+          </body>
+        </html>
+      </SelectedSentencesProvider>
     </ClerkProvider>
   );
 }

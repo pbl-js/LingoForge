@@ -5,9 +5,9 @@ import { getWordById } from '@/db/getWordById';
 import { getWords } from '@/db/getWords';
 import { NoWord } from './NoWord';
 import { WordDetailsHeader } from '@/components/WordDetailsHeader/WordDetailsHeader';
-import { SpeechButton } from '@/components/SpeechButton/SpeechButton';
-import { OpenAISpeechButton } from '@/components/OpenAISpeechButton/OpenAISpeechButton';
 import { getMatchTranslation } from '@/lib/getMatchTranslation';
+import { SentenceItem } from '@/components/SentenceItem/SentenceItem';
+import { FloatingSelectionBar } from '@/components/FloatingSelectionBar/FloatingSelectionBar';
 
 export const dynamic = 'force-dynamic';
 
@@ -93,21 +93,18 @@ export default async function Page({
                       .content
                   }
                 </p>
-                <ul className="flex flex-col gap-1 mt-2 pl-4">
+                <ul className="flex flex-col gap-1 mt-2">
                   {useCase.sentences.map((sentence) => {
-                    const sentenceText = getMatchTranslation(
-                      sentence.translations,
-                      'EN'
-                    ).content;
+                    const { content: sentenceText, audioUrl } =
+                      getMatchTranslation(sentence.translations, 'EN');
+
                     return (
-                      <li
+                      <SentenceItem
                         key={sentence.id}
-                        className="text-sm text-gray-300 list-disc list-inside flex items-center"
-                      >
-                        {sentenceText}
-                        <SpeechButton text={sentenceText} />
-                        <OpenAISpeechButton text={sentenceText} />
-                      </li>
+                        id={sentence.id.toString()}
+                        text={sentenceText}
+                        audioUrl={audioUrl || undefined}
+                      />
                     );
                   })}
                 </ul>
@@ -116,6 +113,7 @@ export default async function Page({
           )}
         </div>
       </div>
+      <FloatingSelectionBar />
     </div>
   );
 }
