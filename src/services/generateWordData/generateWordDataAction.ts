@@ -12,11 +12,6 @@ import { getMatchTranslation } from '@/lib/getMatchTranslation';
 
 const prisma = new PrismaClient();
 
-// Initialize ElevenLabs client
-const elevenLabs = new ElevenLabsClient({
-  apiKey: process.env.ELEVENLABS_API_KEY,
-});
-
 export async function generateSentenceAction(wordId: number) {
   const { userId } = await auth();
 
@@ -41,22 +36,6 @@ export async function generateSentenceAction(wordId: number) {
   ).content;
 
   const res = await wordAiText(englishTranslation);
-
-  // Add ElevenLabs audio generation
-  const wordTitleAudio = await elevenLabs.textToSpeech.convert(
-    'ThT5KcBeYPX3keUQqHPh', // Using "Bella" voice which has a happier tone
-    {
-      text: englishTranslation,
-      model_id: 'eleven_multilingual_v2',
-      output_format: 'mp3_44100_128',
-      voice_settings: {
-        stability: 0.5,
-        similarity_boost: 0.75,
-        style: 0.7, // Increases expressiveness for a happier tone
-        use_speaker_boost: true,
-      },
-    }
-  );
 
   // Find audio URL in translations if it exists - we need to simplify this condition
   const audioTranslation = getMatchTranslation(word.translations, 'EN');
