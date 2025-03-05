@@ -3,34 +3,7 @@
 import { db } from '@/lib/db';
 import { genAudioForTranslations } from './genAudioForTranslation';
 import { saveAudioForTranslations } from './saveAudioForTranslations';
-import { Readable } from 'stream';
 
-/**
- * Converts a readable stream to an ArrayBuffer
- */
-const streamToArrayBuffer = async (stream: Readable): Promise<ArrayBuffer> => {
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-
-    stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
-    stream.on('error', (err) => reject(err));
-    stream.on('end', () => {
-      const buffer = Buffer.concat(chunks);
-      resolve(
-        buffer.buffer.slice(
-          buffer.byteOffset,
-          buffer.byteOffset + buffer.byteLength
-        )
-      );
-    });
-  });
-};
-
-/**
- * Server action to generate and save audio for translations
- * @param translationIds - Array of translation IDs to generate audio for
- * @returns Object containing success status and results
- */
 export const generateAndSaveAudioForTranslations = async (
   translationIds: number[]
 ): Promise<{
@@ -90,7 +63,16 @@ export const generateAndSaveAudioForTranslations = async (
           throw new Error('Audio stream is null despite success flag');
         }
 
-        const audioBuffer = await streamToArrayBuffer(result.audioStream);
+        const chunks = [];
+        for await (const chunk of result.audioStream) {
+          chunks.push(chunk);
+        }
+        const audioBuffer = Buffer.concat(chunks);
+
+        // Make sure we have data
+        if (!audioBuffer || audioBuffer.length === 0) {
+          throw new Error('Received empty audio buffer from ElevenLabs');
+        }
 
         return {
           translationId: result.translation.id,

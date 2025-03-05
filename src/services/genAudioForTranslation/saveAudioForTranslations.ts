@@ -6,7 +6,7 @@ import { Prisma } from '@prisma/client';
 interface AudioTranslationItem {
   translationId: number;
   languageCode: string;
-  audioBuffer: ArrayBuffer;
+  audioBuffer: Buffer<ArrayBuffer>;
 }
 
 /**
