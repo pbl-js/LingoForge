@@ -19,12 +19,13 @@ enum Language {
 }
 
 model Translation {
-  id        Int      @id @default(autoincrement())
-  language  Language
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  audioUrl  String?
+  id             Int      @id @default(autoincrement())
+  language       Language
+  content        String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  audioUrl       String?
+  timestampsJson String? // New field to store the timestamps as JSON
 
   word                 Word?        @relation(fields: [wordId], references: [id], onDelete: Cascade)
   wordId               Int?

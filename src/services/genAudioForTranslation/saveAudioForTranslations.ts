@@ -2,11 +2,13 @@ import { put } from '@vercel/blob';
 import { db } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 import { Prisma } from '@prisma/client';
+import { ElevenLabsTimestamps } from './genAudioWithTimestampsForTranslation';
 
 interface AudioTranslationItem {
   translationId: number;
   languageCode: string;
-  audioBuffer: Buffer<ArrayBuffer>;
+  audioBuffer: Buffer;
+  timestamps?: ElevenLabsTimestamps;
 }
 
 /**
@@ -62,11 +64,17 @@ export const saveAudioForTranslations = async (
         contentType: 'audio/mpeg',
       });
 
-      // Add database update operation
+      // Add database update operation with timestamps
       audioUpdates.push(
         db.translation.update({
           where: { id: item.translationId },
-          data: { audioUrl: blob.url },
+          data: {
+            audioUrl: blob.url,
+            // Store timestamps as a JSON string if they exist
+            ...(item.timestamps
+              ? { timestampsJson: JSON.stringify(item.timestamps) }
+              : {}),
+          },
         })
       );
     }

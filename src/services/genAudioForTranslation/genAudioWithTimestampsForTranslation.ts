@@ -1,11 +1,32 @@
 import { getElevenLabsClient } from '@/lib/elevenLabs/getElevenLabsClient';
 import { Translation } from '@prisma/client';
 import internal from 'stream';
+import { Readable } from 'stream';
 
 const elevenLabs = getElevenLabsClient();
 
-export const genAudioForTranslation = async (translation: Translation) => {
-  const audioStream = await elevenLabs.textToSpeech.convert(
+export interface TimestampData {
+  characters: string[];
+  character_start_times_seconds: number[];
+  character_end_times_seconds: number[];
+}
+
+export interface ElevenLabsTimestamps {
+  alignment: TimestampData;
+  normalized_alignment?: TimestampData;
+}
+
+// These types have to be statically typed, because the ElevenLabs SDK has unknown types
+interface ElevenLabsTimestampResponse {
+  audio_base64: string;
+  alignment: TimestampData;
+  normalized_alignment?: TimestampData;
+}
+
+export const genAudioWithTimestampsForTranslation = async (
+  translation: Translation
+) => {
+  const response = (await elevenLabs.textToSpeech.convertWithTimestamps(
     'ThT5KcBeYPX3keUQqHPh', // Using "Bella" voice which has a happier tone
     {
       text: translation.content,
@@ -18,27 +39,39 @@ export const genAudioForTranslation = async (translation: Translation) => {
         use_speaker_boost: true,
       },
     }
-  );
+  )) as ElevenLabsTimestampResponse;
 
-  return audioStream;
+  // Convert base64 to buffer and then to stream
+  // Its to achieve consistency between convertWithTimestamps and convert
+  const audioBuffer = Buffer.from(response.audio_base64, 'base64');
+  const audioStream = Readable.from(audioBuffer);
+
+  return {
+    audioStream,
+    timestamps: {
+      alignment: response.alignment,
+      normalized_alignment: response.normalized_alignment,
+    },
+  };
 };
 
 export type AudioGenerationResult = {
   translation: Translation;
   audioStream: internal.Readable | null;
+  timestamps?: ElevenLabsTimestamps;
   success: boolean;
   error?: unknown;
 };
 
-export const genAudioForTranslations = async (
+export const genAudioWithTimestampsForTranslations = async (
   translations: Translation[]
 ): Promise<AudioGenerationResult[]> => {
-  console.log('genAudioForTranslations runs');
-
+  console.log('genAudioWithTimestampsForTranslations runs');
   const audioPromises = translations.map((translation) =>
-    genAudioForTranslation(translation).then((audioStream) => ({
+    genAudioWithTimestampsForTranslation(translation).then((result) => ({
       translation,
-      audioStream,
+      audioStream: result.audioStream,
+      timestamps: result.timestamps,
     }))
   );
 
@@ -57,6 +90,7 @@ export const genAudioForTranslations = async (
       return {
         translation,
         audioStream: result.value.audioStream,
+        timestamps: result.value.timestamps,
         success: true,
       };
     } else {

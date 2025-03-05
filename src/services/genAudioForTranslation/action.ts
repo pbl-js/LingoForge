@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { genAudioForTranslations } from './genAudioForTranslation';
+import { genAudioWithTimestampsForTranslations } from './genAudioWithTimestampsForTranslation';
 import { saveAudioForTranslations } from './saveAudioForTranslations';
 
 export const generateAndSaveAudioForTranslations = async (
@@ -39,7 +39,9 @@ export const generateAndSaveAudioForTranslations = async (
     }
 
     // Generate audio for translations
-    const audioResults = await genAudioForTranslations(translations);
+    const audioResults = await genAudioWithTimestampsForTranslations(
+      translations
+    );
     console.log('audioResults: ', audioResults);
 
     // Filter successful results and prepare for saving
@@ -78,6 +80,7 @@ export const generateAndSaveAudioForTranslations = async (
           translationId: result.translation.id,
           languageCode: result.translation.language,
           audioBuffer,
+          timestamps: result.timestamps,
         };
       })
     );
