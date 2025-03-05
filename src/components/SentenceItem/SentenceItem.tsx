@@ -20,6 +20,15 @@ export function SentenceItem({ id, translation }: SentenceItemProps) {
     toggleSentence(translation.id);
   };
 
+  const handlePlayAudio = () => {
+    if (translation.audioUrl) {
+      const audio = new Audio(translation.audioUrl);
+      audio.play().catch((error) => {
+        console.error('Error playing audio:', error);
+      });
+    }
+  };
+
   return (
     <div className="group flex items-center gap-2 p-3 rounded-lg hover:bg-white/5">
       <Checkbox
@@ -35,6 +44,8 @@ export function SentenceItem({ id, translation }: SentenceItemProps) {
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-white/70 hover:text-pink-400 hover:bg-white/5"
+            onClick={handlePlayAudio}
+            aria-label="Play audio"
           >
             <Volume2 className="h-4 w-4" />
           </Button>

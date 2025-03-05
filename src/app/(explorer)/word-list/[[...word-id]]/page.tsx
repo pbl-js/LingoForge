@@ -103,10 +103,8 @@ export default async function Page({
                     return (
                       <SentenceItem
                         key={sentence.id}
-                        // id={sentence.id}
-                        // text={sentenceText}
+                        id={sentence.id}
                         translation={translation}
-                        audioUrl={audioUrl || undefined}
                       />
                     );
                   })}
