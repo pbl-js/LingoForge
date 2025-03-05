@@ -41,3 +41,4 @@ Follow these rules when you write code:
 - Try avoid export default, use named exports instead. Use default exports only when it's required by framework or when it's the only way to solve the problem.
 - Use shadcn@latest instead of shadcn-ui@latest
 - Add "use client" to the top of all client components.
+- Use useTransition hook instead of useState when it can be replaced.

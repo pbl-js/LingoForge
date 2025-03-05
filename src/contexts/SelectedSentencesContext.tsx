@@ -3,12 +3,12 @@
 import * as React from 'react';
 
 type SelectedSentencesContextType = {
-  selectedSentenceIds: string[];
-  toggleSentence: (id: string) => void;
-  selectSentence: (id: string) => void;
-  unselectSentence: (id: string) => void;
+  selectedSentenceIds: number[];
+  toggleSentence: (id: number) => void;
+  selectSentence: (id: number) => void;
+  unselectSentence: (id: number) => void;
   clearSelectedSentences: () => void;
-  isSelected: (id: string) => boolean;
+  isSelected: (id: number) => boolean;
 };
 
 const SelectedSentencesContext = React.createContext<
@@ -21,11 +21,11 @@ function SelectedSentencesProvider({
   children: React.ReactNode;
 }) {
   const [selectedSentenceIds, setSelectedSentenceIds] = React.useState<
-    string[]
+    number[]
   >([]);
 
   // Toggle selection status of a sentence
-  const toggleSentence = React.useCallback((id: string) => {
+  const toggleSentence = React.useCallback((id: number) => {
     setSelectedSentenceIds((prevIds) =>
       prevIds.includes(id)
         ? prevIds.filter((sentenceId) => sentenceId !== id)
@@ -34,14 +34,14 @@ function SelectedSentencesProvider({
   }, []);
 
   // Select a sentence
-  const selectSentence = React.useCallback((id: string) => {
+  const selectSentence = React.useCallback((id: number) => {
     setSelectedSentenceIds((prevIds) =>
       prevIds.includes(id) ? prevIds : [...prevIds, id]
     );
   }, []);
 
   // Unselect a sentence
-  const unselectSentence = React.useCallback((id: string) => {
+  const unselectSentence = React.useCallback((id: number) => {
     setSelectedSentenceIds((prevIds) =>
       prevIds.filter((sentenceId) => sentenceId !== id)
     );
@@ -54,7 +54,7 @@ function SelectedSentencesProvider({
 
   // Check if a sentence is selected
   const isSelected = React.useCallback(
-    (id: string) => selectedSentenceIds.includes(id),
+    (id: number) => selectedSentenceIds.includes(id),
     [selectedSentenceIds]
   );
 

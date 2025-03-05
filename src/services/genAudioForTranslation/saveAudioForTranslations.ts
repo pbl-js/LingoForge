@@ -18,6 +18,7 @@ export const saveAudioForTranslations = async (
   audioTranslations: AudioTranslationItem[]
 ): Promise<void> => {
   try {
+    console.log('saveAudioForTranslations runs');
     if (!audioTranslations.length) {
       throw new Error('No audio translations provided');
     }

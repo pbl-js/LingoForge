@@ -34,6 +34,7 @@ export type AudioGenerationResult = {
 export const genAudioForTranslations = async (
   translations: Translation[]
 ): Promise<AudioGenerationResult[]> => {
+  console.log('genAudioForTranslations runs');
   // Create an array of promises for each translation
   const audioPromises = translations.map((translation) =>
     genAudioForTranslation(translation).then((audioStream) => ({

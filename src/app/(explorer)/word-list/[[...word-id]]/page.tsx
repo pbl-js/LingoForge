@@ -95,14 +95,17 @@ export default async function Page({
                 </p>
                 <ul className="flex flex-col gap-1 mt-2">
                   {useCase.sentences.map((sentence) => {
-                    const { content: sentenceText, audioUrl } =
-                      getMatchTranslation(sentence.translations, 'EN');
+                    const translation = getMatchTranslation(
+                      sentence.translations,
+                      'EN'
+                    );
 
                     return (
                       <SentenceItem
                         key={sentence.id}
-                        id={sentence.id.toString()}
-                        text={sentenceText}
+                        // id={sentence.id}
+                        // text={sentenceText}
+                        translation={translation}
                         audioUrl={audioUrl || undefined}
                       />
                     );

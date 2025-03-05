@@ -5,19 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ImageIcon, Volume2 } from 'lucide-react';
 import { useSelectedSentences } from '@/contexts/SelectedSentencesContext';
+import { Translation } from '@prisma/client';
 
 interface SentenceItemProps {
-  id: string;
-  text: string;
-  audioUrl?: string;
+  id: number;
+  translation: Translation;
 }
 
-export function SentenceItem({ id, text, audioUrl }: SentenceItemProps) {
+export function SentenceItem({ id, translation }: SentenceItemProps) {
   const { isSelected, toggleSentence } = useSelectedSentences();
   const selected = isSelected(id);
 
   const handleCheckboxChange = () => {
-    toggleSentence(id);
+    toggleSentence(translation.id);
   };
 
   return (
@@ -28,9 +28,9 @@ export function SentenceItem({ id, text, audioUrl }: SentenceItemProps) {
         onCheckedChange={handleCheckboxChange}
         className="h-5 w-5 border-white/30 data-[state=checked]:bg-pink-500 data-[state=checked]:border-pink-500 rounded-sm"
       />
-      <p className="flex-1 text-white/90">{text}</p>
+      <p className="flex-1 text-white/90">{translation.content}</p>
       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        {audioUrl && (
+        {translation.audioUrl && (
           <Button
             variant="ghost"
             size="icon"
