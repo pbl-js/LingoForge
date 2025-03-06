@@ -3,6 +3,7 @@
 import { db } from '@/lib/db';
 import { genAudioWithTimestampsForTranslations } from './genAudioWithTimestampsForTranslation';
 import { saveAudioForTranslations } from './saveAudioForTranslations';
+import { revalidatePath } from 'next/cache';
 
 export const generateAndSaveAudioForTranslations = async (
   translationIds: number[]
@@ -94,6 +95,8 @@ export const generateAndSaveAudioForTranslations = async (
     const failedIds = audioResults
       .filter((result) => !result.success)
       .map((result) => result.translation.id);
+
+    revalidatePath('/');
 
     return {
       success: true,

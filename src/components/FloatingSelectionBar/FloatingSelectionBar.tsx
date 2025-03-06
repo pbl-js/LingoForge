@@ -37,6 +37,7 @@ export function FloatingSelectionBar() {
           //     description: result.message,
           //     variant: "default",
           //   });
+          clearSelectedSentences();
         } else {
           //   toast({
           //     title: "Audio generation failed",

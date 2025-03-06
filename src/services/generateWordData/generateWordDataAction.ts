@@ -5,8 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { routes } from '@/consts/routes';
 import { getWordById } from '@/db/getWordById';
 import { auth } from '@clerk/nextjs/server';
-import { put, del } from '@vercel/blob';
-import { ElevenLabsClient } from 'elevenlabs';
+import { del } from '@vercel/blob';
 import { wordAiText, WordAiTextSchema } from '../wordAiText/wordAiText';
 import { getMatchTranslation } from '@/lib/getMatchTranslation';
 
@@ -36,9 +35,9 @@ export async function generateSentenceAction(wordId: number) {
   ).content;
 
   const res = await wordAiText(englishTranslation);
-
-  // Find audio URL in translations if it exists - we need to simplify this condition
   const audioTranslation = getMatchTranslation(word.translations, 'EN');
+
+  //
 
   // Delete old audio if exists
   if (audioTranslation?.audioUrl) {
@@ -47,48 +46,6 @@ export async function generateSentenceAction(wordId: number) {
     } catch (error) {
       console.error('Failed to delete old audio:', error);
     }
-  }
-
-  let audioUrl: string;
-  // Save audio to Vercel Blob
-  try {
-    // Convert ElevenLabs stream to buffer
-    const chunks = [];
-    for await (const chunk of wordTitleAudio) {
-      chunks.push(chunk);
-    }
-    const audioBuffer = Buffer.concat(chunks);
-
-    // Make sure we have data
-    if (!audioBuffer || audioBuffer.length === 0) {
-      throw new Error('Received empty audio buffer from ElevenLabs');
-    }
-
-    // Save to Vercel Blob with content type
-    const { url } = await put(
-      `/word-audio/${word.id}-${englishTranslation}.mp3`,
-      audioBuffer,
-      {
-        access: 'public',
-        contentType: 'audio/mpeg',
-      }
-    );
-
-    // Verify the URL was created
-    if (!url) {
-      throw new Error('Failed to get URL from Vercel Blob');
-    }
-
-    console.log('Audio saved to:', url);
-    audioUrl = url;
-  } catch (error) {
-    console.error('Error saving audio:', error);
-    throw error;
-  }
-
-  // Make sure audioUrl is a string
-  if (typeof audioUrl !== 'string' || !audioUrl) {
-    throw new Error('Failed to generate a valid audio URL');
   }
 
   if (!res.choices[0]?.message.content)
@@ -100,52 +57,6 @@ export async function generateSentenceAction(wordId: number) {
 
   const updatedWord = await prisma.$transaction(
     async (tx) => {
-      // Delete all related records
-      await tx.sentence.deleteMany({
-        where: {
-          useCase: {
-            wordId: wordId,
-          },
-        },
-      });
-
-      await tx.useCase.deleteMany({
-        where: {
-          wordId: wordId,
-        },
-      });
-
-      await tx.similarWord.deleteMany({
-        where: {
-          wordId: wordId,
-        },
-      });
-
-      // Create or update audio translation
-      if (audioTranslation) {
-        console.log(
-          'Updating existing translation with ID:',
-          audioTranslation.id
-        );
-        await tx.translation.update({
-          where: { id: audioTranslation.id },
-          data: {
-            audioUrl: audioUrl,
-          },
-        });
-      } else {
-        console.log('Creating new translation with audio URL');
-        // Create a new audio translation
-        await tx.translation.create({
-          data: {
-            language: 'EN',
-            content: englishTranslation,
-            audioUrl: audioUrl,
-            wordId: wordId,
-          },
-        });
-      }
-
       // Create new useCases with sentences and similar words
       return tx.word.update({
         where: {
