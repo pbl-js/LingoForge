@@ -8,6 +8,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { KaraokeText } from '@/components/KaraokeText/KaraokeText';
 import { WavyText } from '@/components/WavyText/WavyText';
+import { Check } from 'lucide-react';
 
 export function GuessWordInSentence({
   currentWord,
@@ -42,6 +43,10 @@ export function GuessWordInSentence({
   const [isExiting, setIsExiting] = React.useState(false);
   const [showKaraoke, setShowKaraoke] = React.useState(false);
   const [showWavySentence, setShowWavySentence] = React.useState(false);
+  const [showCheckmark, setShowCheckmark] = React.useState(false);
+  const [gamePhase, setGamePhase] = React.useState<
+    'question' | 'checkmark' | 'karaoke' | 'transition'
+  >('question');
 
   const handleTimeUpdate = React.useCallback(() => {
     if (audioRef.current) {
@@ -53,19 +58,15 @@ export function GuessWordInSentence({
     setIsPlayingSentence(false);
     setCurrentTime(0);
 
-    // Hide karaoke
-    setShowKaraoke(false);
+    // Hide karaoke and transition to next round
+    setGamePhase('transition');
+    setIsExiting(true);
 
-    // Proceed to next round after audio ends
     setTimeout(() => {
-      setIsExiting(true);
-
-      // Remove the wavy title hiding code
-      setTimeout(() => {
-        nextRound();
-        setIsExiting(false);
-      }, 1000);
-    }, 500);
+      nextRound();
+      setIsExiting(false);
+      setGamePhase('question');
+    }, 1000);
   }, [nextRound]);
 
   const handleAnswerClick = (answerId: number) => {
@@ -75,26 +76,33 @@ export function GuessWordInSentence({
       correctAnswerAudio.play();
       setCorrectAnswerId(answerId);
 
-      // Hide wavy sentence to prepare for karaoke
-      setShowWavySentence(false);
+      // Start the transition sequence
+      setGamePhase('transition');
+      setIsExiting(true);
 
-      // Show karaoke after correct answer
+      // Show checkmark after elements have exited
       setTimeout(() => {
-        setShowKaraoke(true);
-      }, 300);
+        setGamePhase('checkmark');
+        setShowCheckmark(true);
+        setIsExiting(false);
 
-      // Play sentence audio after a short delay
-      setTimeout(() => {
-        if (audioRef.current) {
-          audioRef.current.currentTime = 0;
-          audioRef.current
-            .play()
-            .then(() => setIsPlayingSentence(true))
-            .catch((err) =>
-              console.error('Error playing sentence audio:', err)
-            );
-        }
-      }, 800);
+        // After checkmark animation, show karaoke
+        setTimeout(() => {
+          setGamePhase('karaoke');
+          setShowKaraoke(true);
+
+          // Play sentence audio
+          if (audioRef.current) {
+            audioRef.current.currentTime = 0;
+            audioRef.current
+              .play()
+              .then(() => setIsPlayingSentence(true))
+              .catch((err) =>
+                console.error('Error playing sentence audio:', err)
+              );
+          }
+        }, 1500); // Time for checkmark to display
+      }, 600); // Time for elements to exit
     } else {
       wrongAnswerAudio.play();
       setMistakeList((prev) => [...prev, answerId]);
@@ -127,8 +135,8 @@ export function GuessWordInSentence({
     setShowKaraoke(false);
     setIsPlayingSentence(false);
     setCurrentTime(0);
-
-    // Remove wavy title animation setup
+    setShowCheckmark(false);
+    setGamePhase('question');
     setShowWavySentence(false);
 
     setTimeout(() => {
@@ -250,82 +258,146 @@ export function GuessWordInSentence({
     }),
   };
 
-  return (
-    <div className="flex flex-col h-full">
-      <div className="flex flex-col items-center">
-        <div className="font-semibold text-3xl text-white">{wordTitle}</div>
-        <div className="text-purple-200">{useCaseTitle}</div>
-      </div>
+  // Checkmark animation variants
+  const checkmarkVariants = {
+    hidden: { scale: 0, opacity: 0 },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        type: 'spring',
+        stiffness: 300,
+        damping: 15,
+      },
+    },
+    exit: {
+      scale: 0,
+      opacity: 0,
+      transition: {
+        duration: 0.3,
+      },
+    },
+  };
 
-      <div className="text-white text-4xl font-medium grow">
-        {showKaraoke && timestamps?.alignment ? (
-          <KaraokeText
-            text={sentenceText}
-            timestamps={timestamps.alignment}
-            isPlaying={isPlayingSentence}
-            currentTime={currentTime}
-            highlightColor="text-green-400"
-            maxScaleFactor={1.3}
-          />
-        ) : (
-          <AnimatePresence mode="wait">
-            <WavyText
-              text={maskedSentence}
-              isAnimating={showWavySentence}
-              delay={0.0}
-              duration={0.01}
-              className="text-white text-4xl font-medium"
-            />
-          </AnimatePresence>
+  return (
+    <div className="flex flex-col h-full relative">
+      <AnimatePresence mode="wait">
+        {gamePhase === 'checkmark' && showCheckmark && (
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center z-10"
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            variants={checkmarkVariants}
+            key="checkmark"
+          >
+            <div className="bg-white rounded-full w-32 h-32 flex items-center justify-center">
+              <Check className="h-20 w-20 text-green-500" />
+            </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
 
       <AnimatePresence mode="wait">
-        <motion.div
-          className="flex flex-col gap-3 mt-auto"
-          variants={containerVariants}
-          initial="hidden"
-          animate={isExiting ? 'exit' : 'visible'}
-          key="answers-container"
-        >
-          {answers.map((answer, index) => (
-            <motion.button
-              onClick={() => handleAnswerClick(answer.id)}
-              key={answer.id}
-              custom={index}
-              variants={itemVariants}
-              whileHover={
-                !mistakeList.includes(answer.id) ? { scale: 1.02 } : {}
-              }
-              whileTap={!mistakeList.includes(answer.id) ? { scale: 0.98 } : {}}
-              className={cn(
-                'w-full px-4 text-lg rounded-full transition-colors border-white border-2 font-medium text-center py-3 capitalize',
-                correctAnswerId === answer.id
-                  ? isCorrect
-                    ? 'bg-green-700 text-white'
-                    : 'bg-red-700 text-white'
-                  : mistakeList.includes(answer.id)
-                  ? 'bg-gray-700/30 text-white/50 border-white/50'
-                  : 'text-white hover:bg-purple-300/5',
-                mistakeList.includes(answer.id) && 'cursor-not-allowed'
-              )}
-              disabled={mistakeList.includes(answer.id) || showKaraoke}
-              aria-label={`Answer option: ${answer.content}`}
-              tabIndex={mistakeList.includes(answer.id) ? -1 : 0}
-              onKeyDown={(e) => {
-                if (
-                  (e.key === 'Enter' || e.key === ' ') &&
-                  !mistakeList.includes(answer.id) &&
-                  !showKaraoke
-                ) {
-                  handleAnswerClick(answer.id);
-                }
-              }}
+        {(gamePhase === 'question' || gamePhase === 'transition') && (
+          <motion.div
+            className="flex flex-col h-full"
+            initial="hidden"
+            animate={isExiting ? 'exit' : 'visible'}
+            exit="exit"
+            variants={containerVariants}
+            key="question-phase"
+          >
+            <div className="flex flex-col items-center">
+              <div className="font-semibold text-3xl text-white">
+                {wordTitle}
+              </div>
+              <div className="text-purple-200">{useCaseTitle}</div>
+            </div>
+
+            <div className="flex flex-col text-white text-4xl font-medium grow items-center">
+              <AnimatePresence mode="wait">
+                <WavyText
+                  text={maskedSentence}
+                  isAnimating={showWavySentence && !isExiting}
+                  delay={0.0}
+                  duration={0.01}
+                  className="text-white text-4xl font-medium"
+                />
+              </AnimatePresence>
+            </div>
+
+            <motion.div
+              className="flex flex-col gap-3 mt-auto"
+              variants={containerVariants}
             >
-              {answer.content}
-            </motion.button>
-          ))}
-        </motion.div>
+              {answers.map((answer, index) => (
+                <motion.button
+                  onClick={() => handleAnswerClick(answer.id)}
+                  key={answer.id}
+                  custom={index}
+                  variants={itemVariants}
+                  whileHover={
+                    !mistakeList.includes(answer.id) ? { scale: 1.02 } : {}
+                  }
+                  whileTap={
+                    !mistakeList.includes(answer.id) ? { scale: 0.98 } : {}
+                  }
+                  className={cn(
+                    'w-full px-4 text-lg rounded-full transition-colors border-white border-2 font-medium text-center py-3 capitalize',
+                    correctAnswerId === answer.id
+                      ? isCorrect
+                        ? 'bg-green-700 text-white'
+                        : 'bg-red-700 text-white'
+                      : mistakeList.includes(answer.id)
+                      ? 'bg-gray-700/30 text-white/50 border-white/50'
+                      : 'text-white hover:bg-purple-300/5',
+                    mistakeList.includes(answer.id) && 'cursor-not-allowed'
+                  )}
+                  disabled={mistakeList.includes(answer.id) || showKaraoke}
+                  aria-label={`Answer option: ${answer.content}`}
+                  tabIndex={mistakeList.includes(answer.id) ? -1 : 0}
+                  onKeyDown={(e) => {
+                    if (
+                      (e.key === 'Enter' || e.key === ' ') &&
+                      !mistakeList.includes(answer.id) &&
+                      !showKaraoke
+                    ) {
+                      handleAnswerClick(answer.id);
+                    }
+                  }}
+                >
+                  {answer.content}
+                </motion.button>
+              ))}
+            </motion.div>
+          </motion.div>
+        )}
+
+        {gamePhase === 'karaoke' && (
+          <motion.div
+            className="flex flex-col h-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            key="karaoke-phase"
+          >
+            <div className="text-white text-4xl font-medium grow flex items-center justify-center">
+              {timestamps?.alignment ? (
+                <KaraokeText
+                  text={sentenceText}
+                  timestamps={timestamps.alignment}
+                  isPlaying={isPlayingSentence}
+                  currentTime={currentTime}
+                  highlightColor="text-green-400"
+                  maxScaleFactor={1.3}
+                />
+              ) : (
+                <div>{sentenceText}</div>
+              )}
+            </div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
