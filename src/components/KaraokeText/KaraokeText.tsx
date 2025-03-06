@@ -70,31 +70,35 @@ export const KaraokeText = ({
 
     const charTime = characterTimestamps[index] ?? 0;
 
+    // Increase the time offset even more for better synchronization
+    const adjustedCurrentTime = currentTime + 0.25;
+
     // If this character hasn't been spoken yet, no glow
-    if (currentTime < charTime) return { textShadow: 'none' };
+    if (adjustedCurrentTime < charTime) return { textShadow: 'none' };
 
     // Calculate how recently this character was spoken
-    const timeSinceSpoken = currentTime - charTime;
+    const timeSinceSpoken = adjustedCurrentTime - charTime;
 
-    if (timeSinceSpoken < 0.2) {
+    // Use even longer durations for the glow effect
+    if (timeSinceSpoken < 0.7) {
       // Just spoken - full glow
       return {
         textShadow: `0 0 10px ${glowColor}, 0 0 15px ${glowColor}`,
         transition: 'text-shadow 0.2s ease-in-out',
       };
-    } else if (timeSinceSpoken < 0.4) {
+    } else if (timeSinceSpoken < 1.4) {
       // Spoken recently - medium glow
       return {
         textShadow: `0 0 7px ${glowColor}, 0 0 10px ${glowColor}`,
         transition: 'text-shadow 0.3s ease-in-out',
       };
-    } else if (timeSinceSpoken < 0.6) {
+    } else if (timeSinceSpoken < 2.1) {
       // Spoken a bit ago - light glow
       return {
         textShadow: `0 0 5px ${glowColor}`,
         transition: 'text-shadow 0.4s ease-in-out',
       };
-    } else if (timeSinceSpoken < 0.8) {
+    } else if (timeSinceSpoken < 2.8) {
       // Spoken a while ago - very light glow
       return {
         textShadow: `0 0 3px ${glowColor}`,
