@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils';
 import { getMatchTranslation } from '@/lib/getMatchTranslation';
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { KaraokeText } from '@/components/KaraokeText/KaraokeText';
+import { WavyText } from '@/components/WavyText/WavyText';
 
 export function GuessWordInSentence({
   currentWord,
@@ -25,11 +27,46 @@ export function GuessWordInSentence({
 
   const newWordAudio = audioUrl ? new Audio(audioUrl) : undefined;
 
+  // Get the sentence audio and timestamps
+  const [sentenceAudio, setSentenceAudio] =
+    React.useState<HTMLAudioElement | null>(null);
+  const [currentTime, setCurrentTime] = React.useState(0);
+  const [isPlayingSentence, setIsPlayingSentence] = React.useState(false);
+  const [timestamps, setTimestamps] = React.useState<any>(null);
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+
   const [correctAnswerId, setCorrectAnswerId] = React.useState<number | null>(
     null
   );
   const [mistakeList, setMistakeList] = React.useState<number[]>([]);
   const [isExiting, setIsExiting] = React.useState(false);
+  const [showKaraoke, setShowKaraoke] = React.useState(false);
+  const [showWavySentence, setShowWavySentence] = React.useState(false);
+
+  const handleTimeUpdate = React.useCallback(() => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+    }
+  }, []);
+
+  const handleAudioEnded = React.useCallback(() => {
+    setIsPlayingSentence(false);
+    setCurrentTime(0);
+
+    // Hide karaoke
+    setShowKaraoke(false);
+
+    // Proceed to next round after audio ends
+    setTimeout(() => {
+      setIsExiting(true);
+
+      // Remove the wavy title hiding code
+      setTimeout(() => {
+        nextRound();
+        setIsExiting(false);
+      }, 1000);
+    }, 500);
+  }, [nextRound]);
 
   const handleAnswerClick = (answerId: number) => {
     const isCorrect = answerId === currentWord.id;
@@ -37,18 +74,27 @@ export function GuessWordInSentence({
     if (isCorrect) {
       correctAnswerAudio.play();
       setCorrectAnswerId(answerId);
-      setIsExiting(true);
 
-      if (newWordAudio) {
-        setTimeout(() => {
-          newWordAudio?.play();
-        }, 800);
-      }
+      // Hide wavy sentence to prepare for karaoke
+      setShowWavySentence(false);
 
+      // Show karaoke after correct answer
       setTimeout(() => {
-        nextRound();
-        setIsExiting(false);
-      }, 2000);
+        setShowKaraoke(true);
+      }, 300);
+
+      // Play sentence audio after a short delay
+      setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.currentTime = 0;
+          audioRef.current
+            .play()
+            .then(() => setIsPlayingSentence(true))
+            .catch((err) =>
+              console.error('Error playing sentence audio:', err)
+            );
+        }
+      }, 800);
     } else {
       wrongAnswerAudio.play();
       setMistakeList((prev) => [...prev, answerId]);
@@ -78,7 +124,64 @@ export function GuessWordInSentence({
     setCorrectAnswerId(null);
     setMistakeList([]);
     setIsExiting(false);
-  }, [currentWord, wordTitle]);
+    setShowKaraoke(false);
+    setIsPlayingSentence(false);
+    setCurrentTime(0);
+
+    // Remove wavy title animation setup
+    setShowWavySentence(false);
+
+    setTimeout(() => {
+      setShowWavySentence(true);
+    }, 300);
+
+    // Reset audio state
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
+      audioRef.current.removeEventListener('ended', handleAudioEnded);
+      audioRef.current = null;
+    }
+
+    // Get sentence audio and timestamps if available
+    if (currentWord.useCases[0]?.sentences[0]) {
+      const sentenceTranslation = getMatchTranslation(
+        currentWord.useCases[0].sentences[0].translations,
+        'EN'
+      );
+
+      if (sentenceTranslation.audioUrl) {
+        const audio = new Audio(sentenceTranslation.audioUrl);
+        audioRef.current = audio;
+        setSentenceAudio(audio);
+
+        // Set up event listeners
+        audio.addEventListener('timeupdate', handleTimeUpdate);
+        audio.addEventListener('ended', handleAudioEnded);
+      }
+
+      // Parse timestamps if available
+      if (sentenceTranslation.timestampsJson) {
+        try {
+          const parsedTimestamps = JSON.parse(
+            sentenceTranslation.timestampsJson
+          );
+          setTimestamps(parsedTimestamps);
+        } catch (error) {
+          console.error('Error parsing timestamps:', error);
+        }
+      }
+    }
+
+    return () => {
+      // Clean up audio resources
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
+        audioRef.current.removeEventListener('ended', handleAudioEnded);
+      }
+    };
+  }, [currentWord, wordTitle, handleTimeUpdate, handleAudioEnded]);
 
   const isCorrect = correctAnswerId === currentWord.id;
 
@@ -155,7 +258,26 @@ export function GuessWordInSentence({
       </div>
 
       <div className="text-white text-4xl font-medium grow">
-        {maskedSentence}{' '}
+        {showKaraoke && timestamps?.alignment ? (
+          <KaraokeText
+            text={sentenceText}
+            timestamps={timestamps.alignment}
+            isPlaying={isPlayingSentence}
+            currentTime={currentTime}
+            highlightColor="text-green-400"
+            maxScaleFactor={1.3}
+          />
+        ) : (
+          <AnimatePresence mode="wait">
+            <WavyText
+              text={maskedSentence}
+              isAnimating={showWavySentence}
+              delay={0.0}
+              duration={0.01}
+              className="text-white text-4xl font-medium"
+            />
+          </AnimatePresence>
+        )}
       </div>
 
       <AnimatePresence mode="wait">
@@ -187,13 +309,14 @@ export function GuessWordInSentence({
                   : 'text-white hover:bg-purple-300/5',
                 mistakeList.includes(answer.id) && 'cursor-not-allowed'
               )}
-              disabled={mistakeList.includes(answer.id)}
+              disabled={mistakeList.includes(answer.id) || showKaraoke}
               aria-label={`Answer option: ${answer.content}`}
               tabIndex={mistakeList.includes(answer.id) ? -1 : 0}
               onKeyDown={(e) => {
                 if (
                   (e.key === 'Enter' || e.key === ' ') &&
-                  !mistakeList.includes(answer.id)
+                  !mistakeList.includes(answer.id) &&
+                  !showKaraoke
                 ) {
                   handleAnswerClick(answer.id);
                 }
