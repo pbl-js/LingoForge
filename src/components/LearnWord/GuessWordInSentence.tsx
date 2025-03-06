@@ -1,8 +1,11 @@
+'use client';
+
 import { AUDIO_SOUNDS } from '@/consts/game-config';
 import { WordForLearning } from '@/db/getWordsForLearning';
 import { cn } from '@/lib/utils';
 import { getMatchTranslation } from '@/lib/getMatchTranslation';
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function GuessWordInSentence({
   currentWord,
@@ -26,13 +29,15 @@ export function GuessWordInSentence({
     null
   );
   const [mistakeList, setMistakeList] = React.useState<number[]>([]);
+  const [isExiting, setIsExiting] = React.useState(false);
 
-  function onClickAnswer(answerId: number) {
+  const handleAnswerClick = (answerId: number) => {
     const isCorrect = answerId === currentWord.id;
 
     if (isCorrect) {
       correctAnswerAudio.play();
       setCorrectAnswerId(answerId);
+      setIsExiting(true);
 
       if (newWordAudio) {
         setTimeout(() => {
@@ -42,12 +47,13 @@ export function GuessWordInSentence({
 
       setTimeout(() => {
         nextRound();
+        setIsExiting(false);
       }, 2000);
     } else {
       wrongAnswerAudio.play();
       setMistakeList((prev) => [...prev, answerId]);
     }
-  }
+  };
 
   const [answers, setAnswers] = React.useState<
     { id: number; content: string }[]
@@ -69,6 +75,9 @@ export function GuessWordInSentence({
     ].sort(() => Math.random() - 0.5);
 
     setAnswers(newAnswers);
+    setCorrectAnswerId(null);
+    setMistakeList([]);
+    setIsExiting(false);
   }, [currentWord, wordTitle]);
 
   const isCorrect = correctAnswerId === currentWord.id;
@@ -93,6 +102,51 @@ export function GuessWordInSentence({
     '_'.repeat(wordTitle.length)
   );
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+        when: 'beforeChildren',
+      },
+    },
+    exit: {
+      opacity: 0,
+      transition: {
+        staggerChildren: 0.05,
+        staggerDirection: -1,
+        when: 'afterChildren',
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.9 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        type: 'spring',
+        stiffness: 300,
+        damping: 24,
+        delay: i * 0.1,
+      },
+    }),
+    exit: (i: number) => ({
+      opacity: 0,
+      y: -20,
+      scale: 0.9,
+      transition: {
+        duration: 0.2,
+        delay: i * 0.05,
+      },
+    }),
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex flex-col items-center">
@@ -104,26 +158,52 @@ export function GuessWordInSentence({
         {maskedSentence}{' '}
       </div>
 
-      <div className="flex flex-col gap-3 mt-auto">
-        {answers.map((answer) => (
-          <button
-            onClick={() => onClickAnswer(answer.id)}
-            key={answer.id}
-            className={cn(
-              'w-full px-4 text-lg rounded-full transition-colors border-white border-2 font-medium text-center py-3 capitalize',
-              correctAnswerId === answer.id
-                ? isCorrect
-                  ? 'bg-green-700 text-white'
-                  : 'bg-red-700 text-white'
-                : 'text-white hover:bg-purple-300/5',
-              'disabled:opacity-50 disabled:cursor-not-allowed' // Added styles for disabled status
-            )}
-            disabled={mistakeList.includes(answer.id)}
-          >
-            {answer.content}
-          </button>
-        ))}
-      </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          className="flex flex-col gap-3 mt-auto"
+          variants={containerVariants}
+          initial="hidden"
+          animate={isExiting ? 'exit' : 'visible'}
+          key="answers-container"
+        >
+          {answers.map((answer, index) => (
+            <motion.button
+              onClick={() => handleAnswerClick(answer.id)}
+              key={answer.id}
+              custom={index}
+              variants={itemVariants}
+              whileHover={
+                !mistakeList.includes(answer.id) ? { scale: 1.02 } : {}
+              }
+              whileTap={!mistakeList.includes(answer.id) ? { scale: 0.98 } : {}}
+              className={cn(
+                'w-full px-4 text-lg rounded-full transition-colors border-white border-2 font-medium text-center py-3 capitalize',
+                correctAnswerId === answer.id
+                  ? isCorrect
+                    ? 'bg-green-700 text-white'
+                    : 'bg-red-700 text-white'
+                  : mistakeList.includes(answer.id)
+                  ? 'bg-gray-700/30 text-white/50 border-white/50'
+                  : 'text-white hover:bg-purple-300/5',
+                mistakeList.includes(answer.id) && 'cursor-not-allowed'
+              )}
+              disabled={mistakeList.includes(answer.id)}
+              aria-label={`Answer option: ${answer.content}`}
+              tabIndex={mistakeList.includes(answer.id) ? -1 : 0}
+              onKeyDown={(e) => {
+                if (
+                  (e.key === 'Enter' || e.key === ' ') &&
+                  !mistakeList.includes(answer.id)
+                ) {
+                  handleAnswerClick(answer.id);
+                }
+              }}
+            >
+              {answer.content}
+            </motion.button>
+          ))}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
