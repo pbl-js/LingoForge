@@ -7,12 +7,14 @@ import { ImageIcon, Volume2 } from 'lucide-react';
 import { useSelectedSentences } from '@/contexts/SelectedSentencesContext';
 import { Translation } from '@prisma/client';
 import { ElevenLabsTimestamps } from '@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation';
+import { KaraokeText } from '@/components/KaraokeText/KaraokeText';
 
 interface SentenceItemProps {
   id: number;
   translation: Translation;
 }
 
+// TODO: CR lots of ai generated code here, need to refactor
 export function SentenceItem({ id, translation }: SentenceItemProps) {
   const { isSelected, toggleSentence } = useSelectedSentences();
   const selected = isSelected(id);
@@ -87,43 +89,6 @@ export function SentenceItem({ id, translation }: SentenceItemProps) {
     }
   };
 
-  // Render the text with highlighting
-  const renderHighlightedText = () => {
-    if (
-      !timestamps ||
-      !timestamps.alignment ||
-      !timestamps.alignment.character_start_times_seconds
-    ) {
-      return <p className="flex-1 text-white/90">{translation.content}</p>;
-    }
-
-    const text = translation.content;
-    const characters = text.split('');
-    const startTimes = timestamps.alignment.character_start_times_seconds;
-
-    // Ensure we have the right number of timestamps
-    if (characters.length !== startTimes.length) {
-      console.warn('Character count and timestamp count mismatch');
-      return <p className="flex-1 text-white/90">{translation.content}</p>;
-    }
-
-    return (
-      <p className="flex-1 text-white/90">
-        {characters.map((char, index) => {
-          const startTime = startTimes[index] ?? 0;
-          // Only highlight if audio is playing and current time is past the start time
-          const isActive = isPlaying && currentTime >= startTime;
-
-          return (
-            <span key={index} className={isActive ? 'text-blue-400' : ''}>
-              {char}
-            </span>
-          );
-        })}
-      </p>
-    );
-  };
-
   return (
     <div className="group flex items-center gap-2 p-3 rounded-lg hover:bg-white/5">
       <Checkbox
@@ -132,7 +97,18 @@ export function SentenceItem({ id, translation }: SentenceItemProps) {
         onCheckedChange={handleCheckboxChange}
         className="h-5 w-5 border-white/30 data-[state=checked]:bg-pink-500 data-[state=checked]:border-pink-500 rounded-sm"
       />
-      {renderHighlightedText()}
+      {timestamps && timestamps.alignment ? (
+        <KaraokeText
+          text={translation.content}
+          timestamps={timestamps.alignment}
+          isPlaying={isPlaying}
+          currentTime={currentTime}
+          highlightColor="text-blue-400"
+          maxScaleFactor={1.3}
+        />
+      ) : (
+        <p className="flex-1 text-white/90">{translation.content}</p>
+      )}
       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
         {translation.audioUrl && (
           <Button
