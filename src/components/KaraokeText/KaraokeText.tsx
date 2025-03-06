@@ -13,7 +13,7 @@ interface KaraokeTextProps {
   isPlaying: boolean;
   currentTime: number;
   highlightColor?: string;
-  maxScaleFactor?: number;
+  glowColor?: string;
 }
 
 // TODO: CR lots of ai generated code here, need to refactor
@@ -23,7 +23,7 @@ export const KaraokeText = ({
   isPlaying,
   currentTime,
   highlightColor = 'text-blue-400',
-  maxScaleFactor = 1.3,
+  glowColor = 'rgba(255, 105, 180, 0.7)', // Light magenta glow
 }: KaraokeTextProps) => {
   // Extract character timestamps
   const getCharacterTimestamps = (): number[] | null => {
@@ -58,23 +58,55 @@ export const KaraokeText = ({
       if (currentTime >= (characterTimestamps[i] ?? 0)) {
         activeIndex = i;
       } else {
+        // We've found the first character that hasn't been reached yet
         break;
       }
     }
   }
 
-  // Calculate scale factor based on distance from active character
-  const getScaleFactor = (index: number): number => {
-    if (activeIndex === -1) return 1; // No scaling when not playing
+  // Calculate glow intensity based on character timing
+  const getGlowStyle = (index: number) => {
+    if (!isPlaying) return {}; // No glow when not playing
 
-    const distance = Math.abs(index - activeIndex);
+    const charTime = characterTimestamps[index] ?? 0;
 
-    if (distance === 0) return maxScaleFactor; // Active character is scaled up
-    if (distance === 1) return 1 + (maxScaleFactor - 1) * 0.75; // Adjacent characters
-    if (distance === 2) return 1 + (maxScaleFactor - 1) * 0.5; // Characters 2 positions away
-    if (distance === 3) return 1 + (maxScaleFactor - 1) * 0.25; // Characters 3 positions away
+    // If this character hasn't been spoken yet, no glow
+    if (currentTime < charTime) return { textShadow: 'none' };
 
-    return 1; // Default scale for distant characters
+    // Calculate how recently this character was spoken
+    const timeSinceSpoken = currentTime - charTime;
+
+    if (timeSinceSpoken < 0.2) {
+      // Just spoken - full glow
+      return {
+        textShadow: `0 0 10px ${glowColor}, 0 0 15px ${glowColor}`,
+        transition: 'text-shadow 0.2s ease-in-out',
+      };
+    } else if (timeSinceSpoken < 0.4) {
+      // Spoken recently - medium glow
+      return {
+        textShadow: `0 0 7px ${glowColor}, 0 0 10px ${glowColor}`,
+        transition: 'text-shadow 0.3s ease-in-out',
+      };
+    } else if (timeSinceSpoken < 0.6) {
+      // Spoken a bit ago - light glow
+      return {
+        textShadow: `0 0 5px ${glowColor}`,
+        transition: 'text-shadow 0.4s ease-in-out',
+      };
+    } else if (timeSinceSpoken < 0.8) {
+      // Spoken a while ago - very light glow
+      return {
+        textShadow: `0 0 3px ${glowColor}`,
+        transition: 'text-shadow 0.5s ease-in-out',
+      };
+    }
+
+    // Spoken long ago - no glow
+    return {
+      textShadow: 'none',
+      transition: 'text-shadow 0.6s ease-in-out',
+    };
   };
 
   return (
@@ -82,17 +114,14 @@ export const KaraokeText = ({
       {characters.map((char, index) => {
         const startTime = characterTimestamps[index] ?? 0;
         const isActive = isPlaying && currentTime >= startTime;
-        const scaleFactor = getScaleFactor(index);
+        const glowStyle = getGlowStyle(index);
 
         return (
           <span
             key={index}
-            className={`inline-block transition-all duration-200 ease-in-out ${
-              isActive ? highlightColor : ''
-            }`}
+            className="inline-block"
             style={{
-              transform: `scale(${scaleFactor})`,
-              transformOrigin: 'center bottom',
+              ...glowStyle,
               display: 'inline-block',
               marginLeft: char === ' ' ? '0.25em' : '0',
               marginRight: char === ' ' ? '0' : '0.01em',
