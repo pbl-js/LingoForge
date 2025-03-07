@@ -6,7 +6,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ImageIcon, Volume2 } from 'lucide-react';
 import { useSelectedSentences } from '@/contexts/SelectedSentencesContext';
 import { Translation } from '@prisma/client';
-import { ElevenLabsTimestamps } from '@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation';
+import {
+  ElevenLabsTimestamps,
+  TimestampData,
+} from '@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation';
 import { KaraokeText } from '@/components/KaraokeText/KaraokeText';
 
 interface SentenceItemProps {
@@ -104,7 +107,6 @@ export function SentenceItem({ id, translation }: SentenceItemProps) {
           isPlaying={isPlaying}
           currentTime={currentTime}
           highlightColor="text-blue-400"
-          maxScaleFactor={1.3}
         />
       ) : (
         <p className="flex-1 text-white/90">{translation.content}</p>

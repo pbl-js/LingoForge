@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { KaraokeText } from '@/components/KaraokeText/KaraokeText';
 import { WavyText } from '@/components/WavyText/WavyText';
 import { Check } from 'lucide-react';
+import { parseTimestampsJson } from '@/lib/parseTimestampsJson';
+import { ElevenLabsTimestamps } from '@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation';
 
 export function GuessWordInSentence({
   currentWord,
@@ -29,9 +31,8 @@ export function GuessWordInSentence({
   // Get the sentence audio and timestamps
   const [currentTime, setCurrentTime] = React.useState(0);
   const [isPlayingSentence, setIsPlayingSentence] = React.useState(false);
-  const [timestamps, setTimestamps] = React.useState<{
-    alignment?: Array<{ word: string; start: number; end: number }>;
-  } | null>(null);
+  const [timestamps, setTimestamps] =
+    React.useState<ElevenLabsTimestamps | null>(null);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
 
   const [correctAnswerId, setCorrectAnswerId] = React.useState<number | null>(
@@ -166,14 +167,11 @@ export function GuessWordInSentence({
 
       // Parse timestamps if available
       if (sentenceTranslation.timestampsJson) {
-        try {
-          const parsedTimestamps = JSON.parse(
-            sentenceTranslation.timestampsJson
-          );
-          setTimestamps(parsedTimestamps);
-        } catch (error) {
-          console.error('Error parsing timestamps:', error);
-        }
+        const result = parseTimestampsJson(sentenceTranslation.timestampsJson);
+
+        if (!result.success) throw new Error(result.error);
+
+        setTimestamps(result.data);
       }
     }
 
@@ -369,7 +367,7 @@ export function GuessWordInSentence({
               {timestamps?.alignment ? (
                 <KaraokeText
                   text={sentenceText}
-                  timestamps={timestamps}
+                  timestamps={timestamps.alignment}
                   isPlaying={isPlayingSentence}
                   currentTime={currentTime}
                   highlightColor="text-green-400"

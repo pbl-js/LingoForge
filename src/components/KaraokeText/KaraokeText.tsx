@@ -1,11 +1,7 @@
 'use client';
 
 import React from 'react';
-
-interface TimestampData {
-  character_start_times_seconds?: number[];
-  // Add other possible timestamp formats here as needed
-}
+import { TimestampData } from '@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation';
 
 interface KaraokeTextProps {
   text: string;
