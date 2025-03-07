@@ -28,7 +28,7 @@ export function parseTimestampsJson(timestamps: string): ParseResult {
         normalized_alignment: timestampDataSchema.optional(),
       })
       .parse(timestampsJson) satisfies ElevenLabsTimestamps;
-
+    console.log('parsedTimestamps', parsedTimestamps);
     return { success: true, data: parsedTimestamps };
   } catch (error) {
     if (error instanceof z.ZodError) {

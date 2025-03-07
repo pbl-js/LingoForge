@@ -364,10 +364,12 @@ export function GuessWordInSentence({
             key="karaoke-phase"
           >
             <div className="text-white text-4xl font-medium grow flex items-center justify-center">
-              {timestamps?.alignment ? (
+              {timestamps?.normalized_alignment || timestamps?.alignment ? (
                 <KaraokeText
                   text={sentenceText}
-                  timestamps={timestamps.alignment}
+                  timestamps={
+                    timestamps.normalized_alignment || timestamps.alignment
+                  }
                   isPlaying={isPlayingSentence}
                   currentTime={currentTime}
                   highlightColor="text-green-400"

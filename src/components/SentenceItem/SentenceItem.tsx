@@ -6,11 +6,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ImageIcon, Volume2 } from 'lucide-react';
 import { useSelectedSentences } from '@/contexts/SelectedSentencesContext';
 import { Translation } from '@prisma/client';
-import {
-  ElevenLabsTimestamps,
-  TimestampData,
-} from '@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation';
+import { ElevenLabsTimestamps } from '@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation';
 import { KaraokeText } from '@/components/KaraokeText/KaraokeText';
+import { parseTimestampsJson } from '@/lib/parseTimestampsJson';
 
 interface SentenceItemProps {
   id: number;
@@ -30,15 +28,13 @@ export function SentenceItem({ id, translation }: SentenceItemProps) {
 
   // Parse timestamps when component mounts
   useEffect(() => {
+    // Parse timestamps if available
     if (translation.timestampsJson) {
-      try {
-        const parsedTimestamps = JSON.parse(
-          translation.timestampsJson
-        ) as ElevenLabsTimestamps;
-        setTimestamps(parsedTimestamps);
-      } catch (error) {
-        console.error('Error parsing timestamps:', error);
-      }
+      const result = parseTimestampsJson(translation.timestampsJson);
+
+      if (!result.success) throw new Error(result.error);
+
+      setTimestamps(result.data);
     }
   }, [translation.timestampsJson]);
 
@@ -100,10 +96,11 @@ export function SentenceItem({ id, translation }: SentenceItemProps) {
         onCheckedChange={handleCheckboxChange}
         className="h-5 w-5 border-white/30 data-[state=checked]:bg-pink-500 data-[state=checked]:border-pink-500 rounded-sm"
       />
-      {timestamps && timestamps.alignment ? (
+      {timestamps &&
+      (timestamps.normalized_alignment || timestamps.alignment) ? (
         <KaraokeText
           text={translation.content}
-          timestamps={timestamps.alignment}
+          timestamps={timestamps.normalized_alignment || timestamps.alignment}
           isPlaying={isPlaying}
           currentTime={currentTime}
           highlightColor="text-blue-400"

@@ -38,11 +38,67 @@ export const KaraokeText = ({
     return <p className="flex-1 text-white/90">{text}</p>;
   }
 
-  const characters = text.split('');
+  // Get the characters from timestamps
+  const timestampChars = timestamps.characters || [];
 
-  // Ensure we have the right number of timestamps
-  if (characters.length !== characterTimestamps.length) {
-    console.warn('Character count and timestamp count mismatch');
+  // Split the text into characters
+  const textChars = text.split('');
+
+  // Check if we need to adjust for leading/trailing spaces in normalized_alignment
+  // This is a common issue with normalized_alignment vs alignment
+  let adjustedTimestampChars = [...timestampChars];
+  let adjustedTimestamps = [...characterTimestamps];
+
+  // If character counts don't match but are close (within a few spaces difference)
+  if (textChars.length !== timestampChars.length) {
+    console.log('Character count mismatch, attempting to adjust');
+
+    // If timestamp chars has leading/trailing spaces that text doesn't have
+    if (timestampChars.length > textChars.length) {
+      // Check for leading space
+      let startOffset = 0;
+      while (
+        startOffset < timestampChars.length &&
+        timestampChars[startOffset] === ' ' &&
+        startOffset < timestampChars.length - textChars.length
+      ) {
+        startOffset++;
+      }
+
+      // Check for trailing space
+      let endOffset = 0;
+      while (
+        endOffset < timestampChars.length - textChars.length - startOffset &&
+        timestampChars[timestampChars.length - 1 - endOffset] === ' '
+      ) {
+        endOffset++;
+      }
+
+      // Adjust the arrays if we found offsets
+      if (startOffset > 0 || endOffset > 0) {
+        adjustedTimestampChars = timestampChars.slice(
+          startOffset,
+          timestampChars.length - endOffset
+        );
+        adjustedTimestamps = characterTimestamps.slice(
+          startOffset,
+          characterTimestamps.length - endOffset
+        );
+      }
+    }
+  }
+
+  // Final check to ensure we have the right number of timestamps
+  if (textChars.length !== adjustedTimestampChars.length) {
+    console.warn(
+      'Character count and timestamp count mismatch after adjustment',
+      {
+        textLength: textChars.length,
+        timestampLength: adjustedTimestampChars.length,
+        text,
+        timestampChars: adjustedTimestampChars.join(''),
+      }
+    );
     return <p className="flex-1 text-white/90">{text}</p>;
   }
 
@@ -50,7 +106,7 @@ export const KaraokeText = ({
   const getGlowStyle = (index: number) => {
     if (!isPlaying) return {}; // No glow when not playing
 
-    const charTime = characterTimestamps[index] ?? 0;
+    const charTime = adjustedTimestamps[index] ?? 0;
 
     // Increase the time offset even more for better synchronization
     const adjustedCurrentTime = currentTime + 0.25;
@@ -97,7 +153,7 @@ export const KaraokeText = ({
 
   return (
     <p className="flex-1 text-white/90 flex flex-wrap">
-      {characters.map((char, index) => {
+      {textChars.map((char, index) => {
         const glowStyle = getGlowStyle(index);
 
         return (
