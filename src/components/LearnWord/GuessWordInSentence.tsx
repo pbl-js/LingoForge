@@ -8,7 +8,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { KaraokeText } from '@/components/KaraokeText/KaraokeText';
 import { WavyText } from '@/components/WavyText/WavyText';
-import { Check, Volume2 } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 export function GuessWordInSentence({
   currentWord,
@@ -47,14 +47,6 @@ export function GuessWordInSentence({
   const [gamePhase, setGamePhase] = React.useState<
     'question' | 'checkmark' | 'karaoke' | 'transition'
   >('question');
-
-  const handlePlayWordAudio = () => {
-    if (newWordAudio) {
-      newWordAudio
-        .play()
-        .catch((err) => console.error('Error playing word audio:', err));
-    }
-  };
 
   const handleTimeUpdate = React.useCallback(() => {
     if (audioRef.current) {
@@ -203,11 +195,6 @@ export function GuessWordInSentence({
   if (!currentWord.useCases[0].sentences[0])
     throw new Error('No use case found');
 
-  // Get the use case title and sentence
-  const useCaseTitle = getMatchTranslation(
-    currentWord.useCases[0]?.titleTranslations,
-    'EN'
-  ).content;
   const sentenceText = getMatchTranslation(
     currentWord.useCases[0]?.sentences[0]?.translations,
     'EN'
@@ -284,28 +271,6 @@ export function GuessWordInSentence({
     },
   };
 
-  // Word title animation variants
-  const wordTitleVariants = {
-    hidden: { opacity: 0, y: -20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: 'spring',
-        stiffness: 300,
-        damping: 24,
-        delay: 0.1,
-      },
-    },
-    exit: {
-      opacity: 0,
-      y: -10, // Less movement on exit
-      transition: {
-        duration: 0.25, // Slightly longer for smoother exit
-      },
-    },
-  };
-
   return (
     <div className="flex flex-col h-full relative">
       <AnimatePresence mode="wait">
@@ -335,38 +300,6 @@ export function GuessWordInSentence({
             variants={containerVariants}
             key="question-phase"
           >
-            <div className="flex flex-col items-center">
-              <motion.div
-                className="font-semibold text-3xl text-white flex items-center gap-2"
-                variants={wordTitleVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-              >
-                {wordTitle}
-                {audioUrl && (
-                  <button
-                    onClick={handlePlayWordAudio}
-                    className="text-white/70 hover:text-white transition-colors"
-                    aria-label="Play word pronunciation"
-                    tabIndex={0}
-                  >
-                    <Volume2 className="h-5 w-5" />
-                  </button>
-                )}
-              </motion.div>
-              <motion.div
-                className="text-purple-200"
-                variants={wordTitleVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                custom={1}
-              >
-                {useCaseTitle}
-              </motion.div>
-            </div>
-
             <div className="flex flex-col text-white text-4xl font-medium grow items-center">
               <AnimatePresence mode="wait">
                 <WavyText
@@ -438,7 +371,7 @@ export function GuessWordInSentence({
               {timestamps?.alignment ? (
                 <KaraokeText
                   text={sentenceText}
-                  timestamps={timestamps.alignment}
+                  timestamps={timestamps}
                   isPlaying={isPlayingSentence}
                   currentTime={currentTime}
                   highlightColor="text-green-400"

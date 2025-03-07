@@ -22,7 +22,6 @@ export const KaraokeText = ({
   timestamps,
   isPlaying,
   currentTime,
-  highlightColor = 'text-blue-400',
   glowColor = 'rgba(255, 105, 180, 0.7)', // Light magenta glow
 }: KaraokeTextProps) => {
   // Extract character timestamps
@@ -49,19 +48,6 @@ export const KaraokeText = ({
   if (characters.length !== characterTimestamps.length) {
     console.warn('Character count and timestamp count mismatch');
     return <p className="flex-1 text-white/90">{text}</p>;
-  }
-
-  // Find the index of the currently active character
-  let activeIndex = -1;
-  if (isPlaying) {
-    for (let i = 0; i < characterTimestamps.length; i++) {
-      if (currentTime >= (characterTimestamps[i] ?? 0)) {
-        activeIndex = i;
-      } else {
-        // We've found the first character that hasn't been reached yet
-        break;
-      }
-    }
   }
 
   // Calculate glow intensity based on character timing
@@ -116,8 +102,6 @@ export const KaraokeText = ({
   return (
     <p className="flex-1 text-white/90 flex flex-wrap">
       {characters.map((char, index) => {
-        const startTime = characterTimestamps[index] ?? 0;
-        const isActive = isPlaying && currentTime >= startTime;
         const glowStyle = getGlowStyle(index);
 
         return (
