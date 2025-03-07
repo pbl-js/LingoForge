@@ -8,7 +8,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { KaraokeText } from '@/components/KaraokeText/KaraokeText';
 import { WavyText } from '@/components/WavyText/WavyText';
-import { Check } from 'lucide-react';
+import { Check, Volume2 } from 'lucide-react';
 
 export function GuessWordInSentence({
   currentWord,
@@ -29,11 +29,11 @@ export function GuessWordInSentence({
   const newWordAudio = audioUrl ? new Audio(audioUrl) : undefined;
 
   // Get the sentence audio and timestamps
-  const [sentenceAudio, setSentenceAudio] =
-    React.useState<HTMLAudioElement | null>(null);
   const [currentTime, setCurrentTime] = React.useState(0);
   const [isPlayingSentence, setIsPlayingSentence] = React.useState(false);
-  const [timestamps, setTimestamps] = React.useState<any>(null);
+  const [timestamps, setTimestamps] = React.useState<{
+    alignment?: Array<{ word: string; start: number; end: number }>;
+  } | null>(null);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
 
   const [correctAnswerId, setCorrectAnswerId] = React.useState<number | null>(
@@ -47,6 +47,14 @@ export function GuessWordInSentence({
   const [gamePhase, setGamePhase] = React.useState<
     'question' | 'checkmark' | 'karaoke' | 'transition'
   >('question');
+
+  const handlePlayWordAudio = () => {
+    if (newWordAudio) {
+      newWordAudio
+        .play()
+        .catch((err) => console.error('Error playing word audio:', err));
+    }
+  };
 
   const handleTimeUpdate = React.useCallback(() => {
     if (audioRef.current) {
@@ -76,15 +84,14 @@ export function GuessWordInSentence({
       correctAnswerAudio.play();
       setCorrectAnswerId(answerId);
 
-      // Start the transition sequence
-      setGamePhase('transition');
+      // Start the transition sequence - immediately begin exit animations
       setIsExiting(true);
 
-      // Show checkmark after elements have exited
+      // Use a much shorter timeout to ensure elements are hidden before checkmark appears
       setTimeout(() => {
+        // First completely hide the question phase
         setGamePhase('checkmark');
         setShowCheckmark(true);
-        setIsExiting(false);
 
         // After checkmark animation, show karaoke
         setTimeout(() => {
@@ -102,7 +109,7 @@ export function GuessWordInSentence({
               );
           }
         }, 1500); // Time for checkmark to display
-      }, 600); // Time for elements to exit
+      }, 200); // Much shorter time for exit animations
     } else {
       wrongAnswerAudio.play();
       setMistakeList((prev) => [...prev, answerId]);
@@ -161,7 +168,6 @@ export function GuessWordInSentence({
       if (sentenceTranslation.audioUrl) {
         const audio = new Audio(sentenceTranslation.audioUrl);
         audioRef.current = audio;
-        setSentenceAudio(audio);
 
         // Set up event listeners
         audio.addEventListener('timeupdate', handleTimeUpdate);
@@ -227,9 +233,8 @@ export function GuessWordInSentence({
     exit: {
       opacity: 0,
       transition: {
-        staggerChildren: 0.05,
-        staggerDirection: -1,
-        when: 'afterChildren',
+        duration: 0.25, // Slightly longer for smoother exit
+        when: 'beforeChildren',
       },
     },
   };
@@ -249,11 +254,11 @@ export function GuessWordInSentence({
     }),
     exit: (i: number) => ({
       opacity: 0,
-      y: -20,
-      scale: 0.9,
+      y: -10, // Less movement on exit
+      scale: 0.95, // Less scaling on exit
       transition: {
-        duration: 0.2,
-        delay: i * 0.05,
+        duration: 0.25, // Slightly longer for smoother exit
+        delay: i * 0.03, // Smaller delay for faster overall exit
       },
     }),
   };
@@ -275,6 +280,28 @@ export function GuessWordInSentence({
       opacity: 0,
       transition: {
         duration: 0.3,
+      },
+    },
+  };
+
+  // Word title animation variants
+  const wordTitleVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: 'spring',
+        stiffness: 300,
+        damping: 24,
+        delay: 0.1,
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -10, // Less movement on exit
+      transition: {
+        duration: 0.25, // Slightly longer for smoother exit
       },
     },
   };
@@ -309,10 +336,35 @@ export function GuessWordInSentence({
             key="question-phase"
           >
             <div className="flex flex-col items-center">
-              <div className="font-semibold text-3xl text-white">
+              <motion.div
+                className="font-semibold text-3xl text-white flex items-center gap-2"
+                variants={wordTitleVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
                 {wordTitle}
-              </div>
-              <div className="text-purple-200">{useCaseTitle}</div>
+                {audioUrl && (
+                  <button
+                    onClick={handlePlayWordAudio}
+                    className="text-white/70 hover:text-white transition-colors"
+                    aria-label="Play word pronunciation"
+                    tabIndex={0}
+                  >
+                    <Volume2 className="h-5 w-5" />
+                  </button>
+                )}
+              </motion.div>
+              <motion.div
+                className="text-purple-200"
+                variants={wordTitleVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                custom={1}
+              >
+                {useCaseTitle}
+              </motion.div>
             </div>
 
             <div className="flex flex-col text-white text-4xl font-medium grow items-center">
@@ -390,7 +442,6 @@ export function GuessWordInSentence({
                   isPlaying={isPlayingSentence}
                   currentTime={currentTime}
                   highlightColor="text-green-400"
-                  maxScaleFactor={1.3}
                 />
               ) : (
                 <div>{sentenceText}</div>
