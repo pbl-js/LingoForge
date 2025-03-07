@@ -21,12 +21,10 @@ export function GuessWordInSentence({
   const wrongAnswerAudio = new Audio(AUDIO_SOUNDS.wrongAnswer);
 
   // Get the English translation for the word title
-  const { content: wordTitle, audioUrl } = getMatchTranslation(
+  const { content: wordTitle } = getMatchTranslation(
     currentWord.translations,
     'EN'
   );
-
-  const newWordAudio = audioUrl ? new Audio(audioUrl) : undefined;
 
   // Get the sentence audio and timestamps
   const [currentTime, setCurrentTime] = React.useState(0);

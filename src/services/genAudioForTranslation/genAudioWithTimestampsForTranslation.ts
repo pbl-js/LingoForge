@@ -12,7 +12,9 @@ export interface TimestampData {
 }
 
 export interface ElevenLabsTimestamps {
+  // This is the primary timestamp data that maps each character in the original text to its precise start and end times in the generated audio.
   alignment: TimestampData;
+  // Same as alignment, but more precised with things like pauses, intonations, etc.
   normalized_alignment?: TimestampData;
 }
 
