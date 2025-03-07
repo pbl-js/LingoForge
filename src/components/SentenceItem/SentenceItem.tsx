@@ -9,6 +9,18 @@ import { Translation } from '@prisma/client';
 import { ElevenLabsTimestamps } from '@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation';
 import { KaraokeText } from '@/components/KaraokeText/KaraokeText';
 import { parseTimestampsJson } from '@/lib/parseTimestampsJson';
+import {
+  adjustTimestamps,
+  DEFAULT_TIMING_CONFIG,
+} from '@/lib/adjustTimestamps';
+
+// Karaoke timing configuration - adjust these values to fine-tune the synchronization
+const KARAOKE_TIMING_CONFIG = {
+  ...DEFAULT_TIMING_CONFIG,
+  // Customize values here for testing
+  // speedFactor: 0.8,  // Make highlighting appear 20% faster
+  // offsetSeconds: -0.2,  // Start highlighting 200ms earlier
+};
 
 interface SentenceItemProps {
   id: number;
@@ -34,7 +46,12 @@ export function SentenceItem({ id, translation }: SentenceItemProps) {
 
       if (!result.success) throw new Error(result.error);
 
-      setTimestamps(result.data);
+      // Apply timing adjustments for better synchronization
+      const adjustedTimestamps = adjustTimestamps(
+        result.data,
+        KARAOKE_TIMING_CONFIG
+      );
+      setTimestamps(adjustedTimestamps);
     }
   }, [translation.timestampsJson]);
 

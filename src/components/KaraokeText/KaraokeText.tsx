@@ -108,8 +108,9 @@ export const KaraokeText = ({
 
     const charTime = adjustedTimestamps[index] ?? 0;
 
-    // Increase the time offset even more for better synchronization
-    const adjustedCurrentTime = currentTime + 0.25;
+    // Adjust current time for better synchronization
+    // Reduced from 0.25 to 0.1 since we're now pre-adjusting the timestamps
+    const adjustedCurrentTime = currentTime + 0.1;
 
     // If this character hasn't been spoken yet, no glow
     if (adjustedCurrentTime < charTime) return { textShadow: 'none' };
@@ -117,37 +118,37 @@ export const KaraokeText = ({
     // Calculate how recently this character was spoken
     const timeSinceSpoken = adjustedCurrentTime - charTime;
 
-    // Use even longer durations for the glow effect
-    if (timeSinceSpoken < 0.7) {
+    // Adjusted durations for the glow effect to make it more responsive
+    if (timeSinceSpoken < 0.5) {
       // Just spoken - full glow
       return {
         textShadow: `0 0 10px ${glowColor}, 0 0 15px ${glowColor}`,
-        transition: 'text-shadow 0.2s ease-in-out',
+        transition: 'text-shadow 0.15s ease-in-out',
       };
-    } else if (timeSinceSpoken < 1.4) {
+    } else if (timeSinceSpoken < 1.0) {
       // Spoken recently - medium glow
       return {
         textShadow: `0 0 7px ${glowColor}, 0 0 10px ${glowColor}`,
-        transition: 'text-shadow 0.3s ease-in-out',
+        transition: 'text-shadow 0.2s ease-in-out',
       };
-    } else if (timeSinceSpoken < 2.1) {
+    } else if (timeSinceSpoken < 1.5) {
       // Spoken a bit ago - light glow
       return {
         textShadow: `0 0 5px ${glowColor}`,
-        transition: 'text-shadow 0.4s ease-in-out',
+        transition: 'text-shadow 0.25s ease-in-out',
       };
-    } else if (timeSinceSpoken < 2.8) {
+    } else if (timeSinceSpoken < 2.0) {
       // Spoken a while ago - very light glow
       return {
         textShadow: `0 0 3px ${glowColor}`,
-        transition: 'text-shadow 0.5s ease-in-out',
+        transition: 'text-shadow 0.3s ease-in-out',
       };
     }
 
     // Spoken long ago - no glow
     return {
       textShadow: 'none',
-      transition: 'text-shadow 0.6s ease-in-out',
+      transition: 'text-shadow 0.4s ease-in-out',
     };
   };
 
