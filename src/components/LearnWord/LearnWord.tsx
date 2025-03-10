@@ -20,7 +20,7 @@ export function LearnWord({ wordsList }: { wordsList: WordForLearning[] }) {
 
   // State to track the current game variant
   const [gameVariant, setGameVariant] = React.useState<GameVariant>(
-    'GuessWordInSentence'
+    'MeaningIntroduction'
   );
 
   const currentWord = wordsList.find((word) => word.id === currentWordId);

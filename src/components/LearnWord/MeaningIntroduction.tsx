@@ -5,14 +5,6 @@ import { WordForLearning } from '@/db/getWordsForLearning';
 import { getMatchTranslation } from '@/lib/getMatchTranslation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Check, X } from 'lucide-react';
 
 export function MeaningIntroduction({
@@ -24,7 +16,6 @@ export function MeaningIntroduction({
 }) {
   const [isExiting, setIsExiting] = React.useState(false);
 
-  // Get the English translation for the word title
   const { content: wordTitle } = getMatchTranslation(
     currentWord.translations,
     'EN'
@@ -37,7 +28,6 @@ export function MeaningIntroduction({
     throw new Error('No use case found for this word');
   }
 
-  // Get the title and description of the first useCase
   const useCaseTitle = getMatchTranslation(
     firstUseCase.titleTranslations,
     'PL'
@@ -51,7 +41,6 @@ export function MeaningIntroduction({
   const handleResponse = (wantsToLearn: boolean) => {
     setIsExiting(true);
 
-    // Add logic here to track user's response if needed
     console.log(
       `User ${
         wantsToLearn ? 'wants' : 'does not want'
@@ -94,38 +83,37 @@ export function MeaningIntroduction({
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="w-full max-w-md mx-auto"
+          className="w-full max-w-md mx-auto flex flex-col h-full px-4"
         >
-          <Card className="border shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-center">
-                {wordTitle}
-              </CardTitle>
-              <CardDescription className="text-center text-lg">
-                {useCaseTitle}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-center mb-4">{useCaseDescription}</p>
-            </CardContent>
-            <CardFooter className="flex justify-between gap-4">
-              <Button
-                variant="outline"
-                className="flex-1 flex items-center justify-center gap-2"
-                onClick={() => handleResponse(false)}
-              >
-                <X className="h-5 w-5" />
-                <span>Skip</span>
-              </Button>
-              <Button
-                className="flex-1 flex items-center justify-center gap-2"
-                onClick={() => handleResponse(true)}
-              >
-                <Check className="h-5 w-5" />
-                <span>Learn</span>
-              </Button>
-            </CardFooter>
-          </Card>
+          <h1 className="text-3xl font-bold text-center text-white mb-5">
+            {wordTitle}
+          </h1>
+          <div className="flex flex-col flex-1 bg-black/20 border-none rounded-2xl mb-4 p-4">
+            <div className="text-center text-white text-xl font-medium">
+              {useCaseTitle}
+            </div>
+            <div className="border-t border-white/15 my-4" />
+            <p className="text-center mb-4 text-white/80">
+              {useCaseDescription}
+            </p>
+          </div>
+          <div className="flex text-white items-center gap-2 justify-between">
+            <Button
+              variant="outline"
+              className="rounded-full h-20 w-20 justify-center p-0 bg-transparent border border-white hover:bg-white/10"
+              onClick={() => handleResponse(false)}
+            >
+              <X size={36} color="white" />
+            </Button>
+            Learn?
+            <Button
+              variant="outline"
+              className="rounded-full h-20 w-20 justify-center p-0 bg-transparent border border-white hover:bg-white/10"
+              onClick={() => handleResponse(true)}
+            >
+              <Check size={36} color="white" />
+            </Button>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
