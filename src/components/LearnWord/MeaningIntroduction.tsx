@@ -62,13 +62,21 @@ export function MeaningIntroduction({
       <div className="flex flex-col flex-1 relative">
         <AnimatePresence>
           {cards.map((item, index) => {
-            const { content: title } = getMatchTranslation(
+            const { content: enTitle } = getMatchTranslation(
               item.titleTranslations,
               'EN'
             );
-            const { content: description } = getMatchTranslation(
+            const { content: enDescription } = getMatchTranslation(
               item.descriptionTranslations,
               'EN'
+            );
+            const { content: plTitle } = getMatchTranslation(
+              item.titleTranslations,
+              'PL'
+            );
+            const { content: plDescription } = getMatchTranslation(
+              item.descriptionTranslations,
+              'PL'
             );
 
             return (
@@ -77,13 +85,24 @@ export function MeaningIntroduction({
                 length={cards.length}
                 index={index}
                 onDragEnd={firstToLast}
-              >
-                <div className="text-white p-8 py-10 flex flex-col items-center justify-center">
-                  <h2 className="text-xl font-bold text-center">{title}</h2>
-                  <div className="my-4 border-t border-white opacity-20 w-full" />
-                  <p className="text-base text-center">{description}</p>
-                </div>
-              </MeaningCard>
+                renderFront={
+                  <div className="text-white p-8 py-10 flex flex-col items-center justify-center">
+                    <h2 className="text-xl font-bold text-center">{enTitle}</h2>
+                    <div className="my-4 border-t border-white opacity-20 w-full" />
+                    <p className="text-base text-center">{enDescription}</p>
+                  </div>
+                }
+                renderBack={
+                  <div
+                    style={{ transform: 'rotateY(180deg)' }}
+                    className="text-white p-8 py-10 flex flex-col items-center justify-center"
+                  >
+                    <h2 className="text-xl font-bold text-center">{plTitle}</h2>
+                    <div className="my-4 border-t border-white opacity-20 w-full" />
+                    <p className="text-base text-center">{plDescription}</p>
+                  </div>
+                }
+              />
             );
           })}
         </AnimatePresence>
