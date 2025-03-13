@@ -4,7 +4,6 @@ import { PrismaClient } from '@prisma/client';
 import { currentUser } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 import { routes } from '@/consts/routes';
-import { redirect } from 'next/navigation';
 import { del } from '@vercel/blob';
 import { getWordById } from '@/db/getWordById';
 
@@ -33,40 +32,11 @@ export async function deleteWordAction(wordId: number) {
       (translation) => translation.audioUrl
     );
 
-    await prisma.$transaction(async (tx) => {
-      // Delete all related records
-      await tx.sentence.deleteMany({
-        where: {
-          useCase: {
-            wordId: wordId,
-          },
-        },
-      });
-
-      await tx.useCase.deleteMany({
-        where: {
-          wordId: wordId,
-        },
-      });
-
-      await tx.similarWord.deleteMany({
-        where: {
-          wordId: wordId,
-        },
-      });
-
-      await tx.translation.deleteMany({
-        where: {
-          wordId: wordId,
-        },
-      });
-
-      await tx.word.delete({
-        where: {
-          id: wordId,
-          userId: user.id,
-        },
-      });
+    await prisma.word.delete({
+      where: {
+        id: wordId,
+        userId: user.id,
+      },
     });
 
     // Delete the audio files after successful database deletion
@@ -82,7 +52,6 @@ export async function deleteWordAction(wordId: number) {
     }
 
     revalidatePath(routes.wordList);
-    redirect(routes.wordList);
   } catch (err) {
     console.error('Error deleting word:', err);
     return { error: 'Failed to delete word' };
