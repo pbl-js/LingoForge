@@ -1,9 +1,9 @@
-'use client';
-import { GenerateSentenceButton } from '../GenerateSentenceButton/GenerateSentenceButton';
-import React from 'react';
-import { OpenAISpeechButton } from '../OpenAISpeechButton/OpenAISpeechButton';
-import { Volume2 } from 'lucide-react';
-import { Button } from '../ui/button';
+"use client";
+import { GenerateSentenceButton } from "../GenerateSentenceButton/GenerateSentenceButton";
+import React from "react";
+import { OpenAISpeechButton } from "../OpenAISpeechButton/OpenAISpeechButton";
+import { Volume2 } from "lucide-react";
+import { Button } from "../ui/button";
 
 type WordDetailsHeaderProps = {
   title: string;
@@ -11,11 +11,7 @@ type WordDetailsHeaderProps = {
   audioUrl?: string;
 };
 
-export function WordDetailsHeader({
-  title,
-  wordId,
-  audioUrl,
-}: WordDetailsHeaderProps) {
+export function WordDetailsHeader({ title, wordId, audioUrl }: WordDetailsHeaderProps) {
   const [audio, setAudio] = React.useState<HTMLAudioElement | null>(null);
 
   // Initialize audio on mount or when URL changes
@@ -25,7 +21,7 @@ export function WordDetailsHeader({
       setAudio(newAudio);
       return () => {
         newAudio.pause();
-        newAudio.src = '';
+        newAudio.src = "";
       };
     }
   }, [audioUrl]);
@@ -38,14 +34,14 @@ export function WordDetailsHeader({
       audio.currentTime = 0;
       await audio.play();
     } catch (error) {
-      console.error('Failed to play audio:', error);
+      console.error("Failed to play audio:", error);
     }
   };
 
   return (
-    <div className="flex w-full justify-between min-h-[40px] items-center">
+    <div className="flex min-h-[40px] w-full items-center justify-between">
       <div className="flex items-center gap-2">
-        <h1 className="text-2xl font-bold text-center text-white">{title}</h1>
+        <h1 className="text-center text-2xl font-bold text-white">{title}</h1>
       </div>
       <div className="flex items-center gap-2">
         {audioUrl && (

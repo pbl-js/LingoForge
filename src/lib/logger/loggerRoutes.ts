@@ -1,9 +1,8 @@
 export const loggerRoutes = {
-  rootLayout: 'Layout: /',
+  rootLayout: "Layout: /",
   // rootPage: 'Page: /[locale]',
-  rootPage: 'Page: /',
-  addWordEndpoint: 'API /api/add-word',
+  rootPage: "Page: /",
+  addWordEndpoint: "API /api/add-word",
 } as const;
 
-export type LoggerRoutesUnion =
-  (typeof loggerRoutes)[keyof typeof loggerRoutes];
+export type LoggerRoutesUnion = (typeof loggerRoutes)[keyof typeof loggerRoutes];

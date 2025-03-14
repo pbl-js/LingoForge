@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from "@prisma/client";
 
 export async function getWordsForLearning(
   prisma: PrismaClient,
@@ -44,6 +44,4 @@ export async function getWordsForLearning(
   });
 }
 
-export type WordForLearning = Prisma.PromiseReturnType<
-  typeof getWordsForLearning
->[number];
+export type WordForLearning = Prisma.PromiseReturnType<typeof getWordsForLearning>[number];

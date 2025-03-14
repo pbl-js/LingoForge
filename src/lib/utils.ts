@@ -1,12 +1,12 @@
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 export function isClient() {
-  return typeof window !== 'undefined';
+  return typeof window !== "undefined";
 }
 
 /**
@@ -15,28 +15,23 @@ export function isClient() {
  * @param percentage - Percentage to darken by (0-100)
  * @returns Darkened RGB color string
  */
-export const darkenRgbColor = (
-  rgbColor: string,
-  percentage: number
-): string => {
+export const darkenRgbColor = (rgbColor: string, percentage: number): string => {
   // Early return if percentage is invalid
   if (percentage < 0 || percentage > 100) {
     return rgbColor;
   }
 
   // Parse RGB values from the string
-  const rgbMatch = rgbColor.match(
-    /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/
-  );
+  const rgbMatch = rgbColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
 
   if (!rgbMatch || rgbMatch.length < 4) {
     return rgbColor;
   }
 
   // Extract RGB values with proper type checking
-  const r = parseInt(rgbMatch[1] || '0', 10);
-  const g = parseInt(rgbMatch[2] || '0', 10);
-  const b = parseInt(rgbMatch[3] || '0', 10);
+  const r = parseInt(rgbMatch[1] || "0", 10);
+  const g = parseInt(rgbMatch[2] || "0", 10);
+  const b = parseInt(rgbMatch[3] || "0", 10);
   const a = rgbMatch[4] ? parseFloat(rgbMatch[4]) : undefined;
 
   // Calculate darkening factor (0-1)

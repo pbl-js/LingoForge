@@ -1,6 +1,6 @@
-import React from 'react';
-import Link from 'next/link';
-import { SimilarWord, Translation } from '@prisma/client';
+import React from "react";
+import Link from "next/link";
+import { SimilarWord, Translation } from "@prisma/client";
 
 type SimilarWordWithTranslations = SimilarWord & {
   translations: Translation[];
@@ -17,19 +17,15 @@ export const SimilarWordsList = ({ similarWords }: SimilarWordsListProps) => {
 
   return (
     <div className="mb-4">
-      <h3 className="text-white font-medium mb-2">Similar Words</h3>
+      <h3 className="mb-2 font-medium text-white">Similar Words</h3>
       <ul className="pl-4">
         {similarWords.map((similarWord) => (
-          <li
-            key={similarWord.id}
-            className="text-sm text-gray-400 list-disc list-inside"
-          >
+          <li key={similarWord.id} className="list-inside list-disc text-sm text-gray-400">
             <Link
               href={`/word-list/${similarWord.id}`}
-              className="hover:text-gray-200 transition-colors"
+              className="transition-colors hover:text-gray-200"
             >
-              {similarWord.translations.find((t) => t.language === 'EN')
-                ?.content || 'Unknown'}
+              {similarWord.translations.find((t) => t.language === "EN")?.content || "Unknown"}
             </Link>
           </li>
         ))}

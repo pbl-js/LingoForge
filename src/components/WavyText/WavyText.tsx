@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion, Variants, HTMLMotionProps } from 'framer-motion';
+import React from "react";
+import { motion, Variants, HTMLMotionProps } from "framer-motion";
 
-interface WavyTextProps extends HTMLMotionProps<'div'> {
+interface WavyTextProps extends HTMLMotionProps<"div"> {
   text: string;
   delay?: number;
   isAnimating: boolean;
@@ -16,7 +16,7 @@ export const WavyText: React.FC<WavyTextProps> = ({
   delay = 0,
   duration = 0.05,
   isAnimating,
-  className = '',
+  className = "",
   ...props
 }: WavyTextProps) => {
   const letters = Array.from(text);
@@ -45,7 +45,7 @@ export const WavyText: React.FC<WavyTextProps> = ({
       y: 0,
       scale: 1,
       transition: {
-        type: 'spring',
+        type: "spring",
         damping: 12,
         stiffness: 200,
       },
@@ -55,7 +55,7 @@ export const WavyText: React.FC<WavyTextProps> = ({
       y: 20,
       scale: 0.9,
       transition: {
-        type: 'spring',
+        type: "spring",
         damping: 12,
         stiffness: 200,
       },
@@ -65,7 +65,7 @@ export const WavyText: React.FC<WavyTextProps> = ({
       y: -20,
       scale: 0.9,
       transition: {
-        type: 'spring',
+        type: "spring",
         damping: 12,
         stiffness: 200,
       },
@@ -77,13 +77,13 @@ export const WavyText: React.FC<WavyTextProps> = ({
       className={`flex flex-wrap ${className}`}
       variants={container}
       initial="hidden"
-      animate={isAnimating ? 'visible' : 'hidden'}
+      animate={isAnimating ? "visible" : "hidden"}
       exit="exit"
       {...props}
     >
       {letters.map((letter, index) => (
         <motion.span key={index} variants={child}>
-          {letter === ' ' ? '\u00A0' : letter}
+          {letter === " " ? "\u00A0" : letter}
         </motion.span>
       ))}
     </motion.div>

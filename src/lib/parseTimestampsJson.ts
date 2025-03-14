@@ -1,5 +1,5 @@
-import { ElevenLabsTimestamps } from '@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation';
-import { z } from 'zod';
+import { ElevenLabsTimestamps } from "@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation";
+import { z } from "zod";
 
 type ParseResult =
   | { success: true; data: ElevenLabsTimestamps }
@@ -12,7 +12,7 @@ export function parseTimestampsJson(timestamps: string): ParseResult {
     if (!timestampsJson) {
       return {
         success: false,
-        error: 'Invalid timestamps: Empty or null JSON',
+        error: "Invalid timestamps: Empty or null JSON",
       };
     }
 
@@ -28,7 +28,7 @@ export function parseTimestampsJson(timestamps: string): ParseResult {
         normalized_alignment: timestampDataSchema.optional(),
       })
       .parse(timestampsJson) satisfies ElevenLabsTimestamps;
-    console.log('parsedTimestamps', parsedTimestamps);
+    console.log("parsedTimestamps", parsedTimestamps);
     return { success: true, data: parsedTimestamps };
   } catch (error) {
     if (error instanceof z.ZodError) {

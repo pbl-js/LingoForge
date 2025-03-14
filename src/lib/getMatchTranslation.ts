@@ -1,9 +1,6 @@
-import { Language, Translation } from '@prisma/client';
+import { Language, Translation } from "@prisma/client";
 
-export function getMatchTranslation(
-  translations: Translation[],
-  language: Language
-) {
+export function getMatchTranslation(translations: Translation[], language: Language) {
   const translation = translations.find((t) => t.language === language);
 
   if (!translation) {

@@ -1,11 +1,5 @@
-import {
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/nextjs';
-import { MainNavigationMenu } from '@/components/NavigationMenu/NavigationMenu';
+import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { MainNavigationMenu } from "@/components/NavigationMenu/NavigationMenu";
 
 export default function RootLayout({
   children,
@@ -13,8 +7,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex flex-col min-h-screen p-3 w-full">
-      <header className="flex flex-row justify-between items-center bg-purple-900 p-3 w-full rounded-xl gap-3 mb-5">
+    <div className="flex min-h-screen w-full flex-col p-3">
+      <header className="mb-5 flex w-full flex-row items-center justify-between gap-3 rounded-xl bg-purple-900 p-3">
         <MainNavigationMenu />
         <div className="flex items-center gap-3">
           <SignedOut>

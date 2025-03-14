@@ -1,16 +1,16 @@
-import { getElevenLabsClient } from '@/lib/elevenLabs/getElevenLabsClient';
-import { Translation } from '@prisma/client';
-import internal from 'stream';
+import { getElevenLabsClient } from "@/lib/elevenLabs/getElevenLabsClient";
+import { Translation } from "@prisma/client";
+import internal from "stream";
 
 const elevenLabs = getElevenLabsClient();
 
 export const genAudioForTranslation = async (translation: Translation) => {
   const audioStream = await elevenLabs.textToSpeech.convert(
-    'ThT5KcBeYPX3keUQqHPh', // Using "Bella" voice which has a happier tone
+    "ThT5KcBeYPX3keUQqHPh", // Using "Bella" voice which has a happier tone
     {
       text: translation.content,
-      model_id: 'eleven_multilingual_v2',
-      output_format: 'mp3_44100_128',
+      model_id: "eleven_multilingual_v2",
+      output_format: "mp3_44100_128",
       voice_settings: {
         stability: 0.5,
         similarity_boost: 0.75,
@@ -33,7 +33,7 @@ export type AudioGenerationResult = {
 export const genAudioForTranslations = async (
   translations: Translation[]
 ): Promise<AudioGenerationResult[]> => {
-  console.log('genAudioForTranslations runs');
+  console.log("genAudioForTranslations runs");
 
   const audioPromises = translations.map((translation) =>
     genAudioForTranslation(translation).then((audioStream) => ({
@@ -50,20 +50,17 @@ export const genAudioForTranslations = async (
     const translation = translations[index];
 
     if (!translation) {
-      throw new Error('Translation not found');
+      throw new Error("Translation not found");
     }
 
-    if (result.status === 'fulfilled') {
+    if (result.status === "fulfilled") {
       return {
         translation,
         audioStream: result.value.audioStream,
         success: true,
       };
     } else {
-      console.error(
-        `Error generating audio for translation ${translation.id}:`,
-        result.reason
-      );
+      console.error(`Error generating audio for translation ${translation.id}:`, result.reason);
       return {
         translation,
         audioStream: null,

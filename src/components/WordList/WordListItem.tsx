@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { routes } from '@/consts/routes';
-import Link from 'next/link';
-import { Button } from '../ui/button';
-import { Trash2 } from 'lucide-react';
-import { deleteWordAction } from '@/actions/deleteWord';
-import { useTransition } from 'react';
+import { routes } from "@/consts/routes";
+import Link from "next/link";
+import { Button } from "../ui/button";
+import { Trash2 } from "lucide-react";
+import { deleteWordAction } from "@/actions/deleteWord";
+import { useTransition } from "react";
 
 type WordListItemProps = {
   id: number;
@@ -26,17 +26,17 @@ export function WordListItem({ id, title }: WordListItemProps) {
   };
 
   return (
-    <div className="flex justify-between items-center py-3 px-5 pr-3 rounded-xl bg-purple-900 w-full">
+    <div className="flex w-full items-center justify-between rounded-xl bg-purple-900 px-5 py-3 pr-3">
       <Link
         href={routes.wordListDetails(id)}
-        className="text-white hover:text-purple-300 transition-colors capitalize"
+        className="capitalize text-white transition-colors hover:text-purple-300"
       >
         {title}
       </Link>
       <Button
         variant="ghost"
         size="icon"
-        className="text-purple-300 hover:text-white hover:bg-purple-800 transition-colors"
+        className="text-purple-300 transition-colors hover:bg-purple-800 hover:text-white"
         onClick={handleDelete}
         disabled={isPending}
       >

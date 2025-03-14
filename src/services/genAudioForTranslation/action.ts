@@ -1,9 +1,9 @@
-'use server';
+"use server";
 
-import { db } from '@/lib/db';
-import { genAudioWithTimestampsForTranslations } from './genAudioWithTimestampsForTranslation';
-import { saveAudioForTranslations } from './saveAudioForTranslations';
-import { revalidatePath } from 'next/cache';
+import { db } from "@/lib/db";
+import { genAudioWithTimestampsForTranslations } from "./genAudioWithTimestampsForTranslation";
+import { saveAudioForTranslations } from "./saveAudioForTranslations";
+import { revalidatePath } from "next/cache";
 
 export const generateAndSaveAudioForTranslations = async (
   translationIds: number[]
@@ -17,7 +17,7 @@ export const generateAndSaveAudioForTranslations = async (
     if (!translationIds.length) {
       return {
         success: false,
-        message: 'No translation IDs provided',
+        message: "No translation IDs provided",
         processedCount: 0,
       };
     }
@@ -34,26 +34,22 @@ export const generateAndSaveAudioForTranslations = async (
     if (!translations.length) {
       return {
         success: false,
-        message: 'No translations found with the provided IDs',
+        message: "No translations found with the provided IDs",
         processedCount: 0,
       };
     }
 
     // Generate audio for translations
-    const audioResults = await genAudioWithTimestampsForTranslations(
-      translations
-    );
-    console.log('audioResults: ', audioResults);
+    const audioResults = await genAudioWithTimestampsForTranslations(translations);
+    console.log("audioResults: ", audioResults);
 
     // Filter successful results and prepare for saving
-    const successfulResults = audioResults.filter(
-      (result) => result.success && result.audioStream
-    );
+    const successfulResults = audioResults.filter((result) => result.success && result.audioStream);
 
     if (!successfulResults.length) {
       return {
         success: false,
-        message: 'Failed to generate audio for any translations',
+        message: "Failed to generate audio for any translations",
         processedCount: 0,
         failedIds: translations.map((t) => t.id),
       };
@@ -63,7 +59,7 @@ export const generateAndSaveAudioForTranslations = async (
     const audioTranslationItems = await Promise.all(
       successfulResults.map(async (result) => {
         if (!result.audioStream) {
-          throw new Error('Audio stream is null despite success flag');
+          throw new Error("Audio stream is null despite success flag");
         }
 
         const chunks = [];
@@ -74,7 +70,7 @@ export const generateAndSaveAudioForTranslations = async (
 
         // Make sure we have data
         if (!audioBuffer || audioBuffer.length === 0) {
-          throw new Error('Received empty audio buffer from ElevenLabs');
+          throw new Error("Received empty audio buffer from ElevenLabs");
         }
 
         return {
@@ -86,7 +82,7 @@ export const generateAndSaveAudioForTranslations = async (
       })
     );
 
-    console.log('audioResults: ', audioResults);
+    console.log("audioResults: ", audioResults);
 
     // Save audio files
     await saveAudioForTranslations(audioTranslationItems);
@@ -96,7 +92,7 @@ export const generateAndSaveAudioForTranslations = async (
       .filter((result) => !result.success)
       .map((result) => result.translation.id);
 
-    revalidatePath('/');
+    revalidatePath("/");
 
     return {
       success: true,
@@ -107,11 +103,11 @@ export const generateAndSaveAudioForTranslations = async (
       failedIds: failedIds.length ? failedIds : undefined,
     };
   } catch (error) {
-    console.error('Error in generateAndSaveAudioForTranslations:', error);
+    console.error("Error in generateAndSaveAudioForTranslations:", error);
     return {
       success: false,
       message: `Error processing translations: ${
-        error instanceof Error ? error.message : 'Unknown error'
+        error instanceof Error ? error.message : "Unknown error"
       }`,
       processedCount: 0,
     };

@@ -1,20 +1,17 @@
-'use client';
+"use client";
 
-import { AUDIO_SOUNDS } from '@/consts/game-config';
-import { WordForLearning } from '@/db/getWordsForLearning';
-import { cn } from '@/lib/utils';
-import { getMatchTranslation } from '@/lib/getMatchTranslation';
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { KaraokeText } from '@/components/KaraokeText/KaraokeText';
-import { WavyText } from '@/components/WavyText/WavyText';
-import { Check } from 'lucide-react';
-import { parseTimestampsJson } from '@/lib/parseTimestampsJson';
-import { ElevenLabsTimestamps } from '@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation';
-import {
-  adjustTimestamps,
-  DEFAULT_TIMING_CONFIG,
-} from '@/lib/adjustTimestamps';
+import { AUDIO_SOUNDS } from "@/consts/game-config";
+import { WordForLearning } from "@/db/getWordsForLearning";
+import { cn } from "@/lib/utils";
+import { getMatchTranslation } from "@/lib/getMatchTranslation";
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { KaraokeText } from "@/components/KaraokeText/KaraokeText";
+import { WavyText } from "@/components/WavyText/WavyText";
+import { Check } from "lucide-react";
+import { parseTimestampsJson } from "@/lib/parseTimestampsJson";
+import { ElevenLabsTimestamps } from "@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation";
+import { adjustTimestamps, DEFAULT_TIMING_CONFIG } from "@/lib/adjustTimestamps";
 
 // Karaoke timing configuration - adjust these values to fine-tune the synchronization
 const KARAOKE_TIMING_CONFIG = {
@@ -35,29 +32,23 @@ export function GuessWordInSentence({
   const wrongAnswerAudio = new Audio(AUDIO_SOUNDS.wrongAnswer);
 
   // Get the English translation for the word title
-  const { content: wordTitle } = getMatchTranslation(
-    currentWord.translations,
-    'EN'
-  );
+  const { content: wordTitle } = getMatchTranslation(currentWord.translations, "EN");
 
   // Get the sentence audio and timestamps
   const [currentTime, setCurrentTime] = React.useState(0);
   const [isPlayingSentence, setIsPlayingSentence] = React.useState(false);
-  const [timestamps, setTimestamps] =
-    React.useState<ElevenLabsTimestamps | null>(null);
+  const [timestamps, setTimestamps] = React.useState<ElevenLabsTimestamps | null>(null);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
 
-  const [correctAnswerId, setCorrectAnswerId] = React.useState<number | null>(
-    null
-  );
+  const [correctAnswerId, setCorrectAnswerId] = React.useState<number | null>(null);
   const [mistakeList, setMistakeList] = React.useState<number[]>([]);
   const [isExiting, setIsExiting] = React.useState(false);
   const [showKaraoke, setShowKaraoke] = React.useState(false);
   const [showWavySentence, setShowWavySentence] = React.useState(false);
   const [showCheckmark, setShowCheckmark] = React.useState(false);
   const [gamePhase, setGamePhase] = React.useState<
-    'question' | 'checkmark' | 'karaoke' | 'transition'
-  >('question');
+    "question" | "checkmark" | "karaoke" | "transition"
+  >("question");
 
   const handleTimeUpdate = React.useCallback(() => {
     if (audioRef.current) {
@@ -70,13 +61,13 @@ export function GuessWordInSentence({
     setCurrentTime(0);
 
     // Hide karaoke and transition to next round
-    setGamePhase('transition');
+    setGamePhase("transition");
     setIsExiting(true);
 
     setTimeout(() => {
       nextRound();
       setIsExiting(false);
-      setGamePhase('question');
+      setGamePhase("question");
     }, 1000);
   }, [nextRound]);
 
@@ -93,12 +84,12 @@ export function GuessWordInSentence({
       // Use a much shorter timeout to ensure elements are hidden before checkmark appears
       setTimeout(() => {
         // First completely hide the question phase
-        setGamePhase('checkmark');
+        setGamePhase("checkmark");
         setShowCheckmark(true);
 
         // After checkmark animation, show karaoke
         setTimeout(() => {
-          setGamePhase('karaoke');
+          setGamePhase("karaoke");
           setShowKaraoke(true);
 
           // Play sentence audio
@@ -107,9 +98,7 @@ export function GuessWordInSentence({
             audioRef.current
               .play()
               .then(() => setIsPlayingSentence(true))
-              .catch((err) =>
-                console.error('Error playing sentence audio:', err)
-              );
+              .catch((err) => console.error("Error playing sentence audio:", err));
           }
         }, 1500); // Time for checkmark to display
       }, 200); // Much shorter time for exit animations
@@ -119,9 +108,7 @@ export function GuessWordInSentence({
     }
   };
 
-  const [answers, setAnswers] = React.useState<
-    { id: number; content: string }[]
-  >([]);
+  const [answers, setAnswers] = React.useState<{ id: number; content: string }[]>([]);
 
   // This effect is needed to prevent hydration error
   React.useEffect(() => {
@@ -133,7 +120,7 @@ export function GuessWordInSentence({
     const newAnswers = [
       ...shuffledSimilarWords.map((word) => ({
         id: word.id,
-        content: getMatchTranslation(word.translations, 'EN').content,
+        content: getMatchTranslation(word.translations, "EN").content,
       })),
       { id: currentWord.id, content: wordTitle },
     ].sort(() => Math.random() - 0.5);
@@ -146,7 +133,7 @@ export function GuessWordInSentence({
     setIsPlayingSentence(false);
     setCurrentTime(0);
     setShowCheckmark(false);
-    setGamePhase('question');
+    setGamePhase("question");
     setShowWavySentence(false);
 
     setTimeout(() => {
@@ -156,8 +143,8 @@ export function GuessWordInSentence({
     // Reset audio state
     if (audioRef.current) {
       audioRef.current.pause();
-      audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
-      audioRef.current.removeEventListener('ended', handleAudioEnded);
+      audioRef.current.removeEventListener("timeupdate", handleTimeUpdate);
+      audioRef.current.removeEventListener("ended", handleAudioEnded);
       audioRef.current = null;
     }
 
@@ -165,7 +152,7 @@ export function GuessWordInSentence({
     if (currentWord.useCases[0]?.sentences[0]) {
       const sentenceTranslation = getMatchTranslation(
         currentWord.useCases[0].sentences[0].translations,
-        'EN'
+        "EN"
       );
 
       if (sentenceTranslation.audioUrl) {
@@ -173,8 +160,8 @@ export function GuessWordInSentence({
         audioRef.current = audio;
 
         // Set up event listeners
-        audio.addEventListener('timeupdate', handleTimeUpdate);
-        audio.addEventListener('ended', handleAudioEnded);
+        audio.addEventListener("timeupdate", handleTimeUpdate);
+        audio.addEventListener("ended", handleAudioEnded);
       }
 
       // Parse timestamps if available
@@ -184,10 +171,7 @@ export function GuessWordInSentence({
         if (!result.success) throw new Error(result.error);
 
         // Apply timing adjustments for better synchronization
-        const adjustedTimestamps = adjustTimestamps(
-          result.data,
-          KARAOKE_TIMING_CONFIG
-        );
+        const adjustedTimestamps = adjustTimestamps(result.data, KARAOKE_TIMING_CONFIG);
         setTimestamps(adjustedTimestamps);
       }
     }
@@ -196,27 +180,26 @@ export function GuessWordInSentence({
       // Clean up audio resources
       if (audioRef.current) {
         audioRef.current.pause();
-        audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
-        audioRef.current.removeEventListener('ended', handleAudioEnded);
+        audioRef.current.removeEventListener("timeupdate", handleTimeUpdate);
+        audioRef.current.removeEventListener("ended", handleAudioEnded);
       }
     };
   }, [currentWord, wordTitle, handleTimeUpdate, handleAudioEnded]);
 
   const isCorrect = correctAnswerId === currentWord.id;
 
-  if (!currentWord.useCases[0]) throw new Error('No use case found');
-  if (!currentWord.useCases[0].sentences[0])
-    throw new Error('No use case found');
+  if (!currentWord.useCases[0]) throw new Error("No use case found");
+  if (!currentWord.useCases[0].sentences[0]) throw new Error("No use case found");
 
   const sentenceText = getMatchTranslation(
     currentWord.useCases[0]?.sentences[0]?.translations,
-    'EN'
+    "EN"
   ).content;
 
   // Replace the word in the sentence with underscores
   const maskedSentence = sentenceText.replace(
-    new RegExp(wordTitle, 'gi'),
-    '_'.repeat(wordTitle.length)
+    new RegExp(wordTitle, "gi"),
+    "_".repeat(wordTitle.length)
   );
 
   // Animation variants
@@ -227,14 +210,14 @@ export function GuessWordInSentence({
       transition: {
         staggerChildren: 0.1,
         delayChildren: 0.2,
-        when: 'beforeChildren',
+        when: "beforeChildren",
       },
     },
     exit: {
       opacity: 0,
       transition: {
         duration: 0.25, // Slightly longer for smoother exit
-        when: 'beforeChildren',
+        when: "beforeChildren",
       },
     },
   };
@@ -246,7 +229,7 @@ export function GuessWordInSentence({
       y: 0,
       scale: 1,
       transition: {
-        type: 'spring',
+        type: "spring",
         stiffness: 300,
         damping: 24,
         delay: i * 0.1,
@@ -270,7 +253,7 @@ export function GuessWordInSentence({
       scale: 1,
       opacity: 1,
       transition: {
-        type: 'spring',
+        type: "spring",
         stiffness: 300,
         damping: 15,
       },
@@ -285,18 +268,18 @@ export function GuessWordInSentence({
   };
 
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="relative flex h-full flex-col">
       <AnimatePresence mode="wait">
-        {gamePhase === 'checkmark' && showCheckmark && (
+        {gamePhase === "checkmark" && showCheckmark && (
           <motion.div
-            className="absolute inset-0 flex items-center justify-center z-10"
+            className="absolute inset-0 z-10 flex items-center justify-center"
             initial="hidden"
             animate="visible"
             exit="exit"
             variants={checkmarkVariants}
             key="checkmark"
           >
-            <div className="bg-white rounded-full w-32 h-32 flex items-center justify-center">
+            <div className="flex h-32 w-32 items-center justify-center rounded-full bg-white">
               <Check className="h-20 w-20 text-green-500" />
             </div>
           </motion.div>
@@ -304,60 +287,53 @@ export function GuessWordInSentence({
       </AnimatePresence>
 
       <AnimatePresence mode="wait">
-        {(gamePhase === 'question' || gamePhase === 'transition') && (
+        {(gamePhase === "question" || gamePhase === "transition") && (
           <motion.div
-            className="flex flex-col h-full"
+            className="flex h-full flex-col"
             initial="hidden"
-            animate={isExiting ? 'exit' : 'visible'}
+            animate={isExiting ? "exit" : "visible"}
             exit="exit"
             variants={containerVariants}
             key="question-phase"
           >
-            <div className="flex flex-col text-white text-4xl font-medium grow items-center">
+            <div className="flex grow flex-col items-center text-4xl font-medium text-white">
               <AnimatePresence mode="wait">
                 <WavyText
                   text={maskedSentence}
                   isAnimating={showWavySentence && !isExiting}
                   delay={0.0}
                   duration={0.01}
-                  className="text-white text-4xl font-medium"
+                  className="text-4xl font-medium text-white"
                 />
               </AnimatePresence>
             </div>
 
-            <motion.div
-              className="flex flex-col gap-3 mt-auto"
-              variants={containerVariants}
-            >
+            <motion.div className="mt-auto flex flex-col gap-3" variants={containerVariants}>
               {answers.map((answer, index) => (
                 <motion.button
                   onClick={() => handleAnswerClick(answer.id)}
                   key={answer.id}
                   custom={index}
                   variants={itemVariants}
-                  whileHover={
-                    !mistakeList.includes(answer.id) ? { scale: 1.02 } : {}
-                  }
-                  whileTap={
-                    !mistakeList.includes(answer.id) ? { scale: 0.98 } : {}
-                  }
+                  whileHover={!mistakeList.includes(answer.id) ? { scale: 1.02 } : {}}
+                  whileTap={!mistakeList.includes(answer.id) ? { scale: 0.98 } : {}}
                   className={cn(
-                    'w-full px-4 text-lg rounded-full transition-colors border-white border-2 font-medium text-center py-3 capitalize',
+                    "w-full rounded-full border-2 border-white px-4 py-3 text-center text-lg font-medium capitalize transition-colors",
                     correctAnswerId === answer.id
                       ? isCorrect
-                        ? 'bg-green-700 text-white'
-                        : 'bg-red-700 text-white'
+                        ? "bg-green-700 text-white"
+                        : "bg-red-700 text-white"
                       : mistakeList.includes(answer.id)
-                      ? 'bg-gray-700/30 text-white/50 border-white/50'
-                      : 'text-white hover:bg-purple-300/5',
-                    mistakeList.includes(answer.id) && 'cursor-not-allowed'
+                        ? "border-white/50 bg-gray-700/30 text-white/50"
+                        : "text-white hover:bg-purple-300/5",
+                    mistakeList.includes(answer.id) && "cursor-not-allowed"
                   )}
                   disabled={mistakeList.includes(answer.id) || showKaraoke}
                   aria-label={`Answer option: ${answer.content}`}
                   tabIndex={mistakeList.includes(answer.id) ? -1 : 0}
                   onKeyDown={(e) => {
                     if (
-                      (e.key === 'Enter' || e.key === ' ') &&
+                      (e.key === "Enter" || e.key === " ") &&
                       !mistakeList.includes(answer.id) &&
                       !showKaraoke
                     ) {
@@ -372,21 +348,19 @@ export function GuessWordInSentence({
           </motion.div>
         )}
 
-        {gamePhase === 'karaoke' && (
+        {gamePhase === "karaoke" && (
           <motion.div
-            className="flex flex-col h-full"
+            className="flex h-full flex-col"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             key="karaoke-phase"
           >
-            <div className="text-white text-4xl font-medium grow flex items-center justify-center">
+            <div className="flex grow items-center justify-center text-4xl font-medium text-white">
               {timestamps?.normalized_alignment || timestamps?.alignment ? (
                 <KaraokeText
                   text={sentenceText}
-                  timestamps={
-                    timestamps.normalized_alignment || timestamps.alignment
-                  }
+                  timestamps={timestamps.normalized_alignment || timestamps.alignment}
                   isPlaying={isPlayingSentence}
                   currentTime={currentTime}
                   highlightColor="text-green-400"

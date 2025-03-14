@@ -1,7 +1,7 @@
-import { getElevenLabsClient } from '@/lib/elevenLabs/getElevenLabsClient';
-import { Translation } from '@prisma/client';
-import internal from 'stream';
-import { Readable } from 'stream';
+import { getElevenLabsClient } from "@/lib/elevenLabs/getElevenLabsClient";
+import { Translation } from "@prisma/client";
+import internal from "stream";
+import { Readable } from "stream";
 
 const elevenLabs = getElevenLabsClient();
 
@@ -25,15 +25,13 @@ interface ElevenLabsTimestampResponse {
   normalized_alignment?: TimestampData;
 }
 
-export const genAudioWithTimestampsForTranslation = async (
-  translation: Translation
-) => {
+export const genAudioWithTimestampsForTranslation = async (translation: Translation) => {
   const response = (await elevenLabs.textToSpeech.convertWithTimestamps(
-    'ThT5KcBeYPX3keUQqHPh', // Using "Bella" voice which has a happier tone
+    "ThT5KcBeYPX3keUQqHPh", // Using "Bella" voice which has a happier tone
     {
       text: translation.content,
-      model_id: 'eleven_multilingual_v2',
-      output_format: 'mp3_44100_128',
+      model_id: "eleven_multilingual_v2",
+      output_format: "mp3_44100_128",
       voice_settings: {
         stability: 0.5,
         similarity_boost: 0.75,
@@ -45,7 +43,7 @@ export const genAudioWithTimestampsForTranslation = async (
 
   // Convert base64 to buffer and then to stream
   // Its to achieve consistency between convertWithTimestamps and convert
-  const audioBuffer = Buffer.from(response.audio_base64, 'base64');
+  const audioBuffer = Buffer.from(response.audio_base64, "base64");
   const audioStream = Readable.from(audioBuffer);
 
   return {
@@ -68,7 +66,7 @@ export type AudioGenerationResult = {
 export const genAudioWithTimestampsForTranslations = async (
   translations: Translation[]
 ): Promise<AudioGenerationResult[]> => {
-  console.log('genAudioWithTimestampsForTranslations runs');
+  console.log("genAudioWithTimestampsForTranslations runs");
   const audioPromises = translations.map((translation) =>
     genAudioWithTimestampsForTranslation(translation).then((result) => ({
       translation,
@@ -85,10 +83,10 @@ export const genAudioWithTimestampsForTranslations = async (
     const translation = translations[index];
 
     if (!translation) {
-      throw new Error('Translation not found');
+      throw new Error("Translation not found");
     }
 
-    if (result.status === 'fulfilled') {
+    if (result.status === "fulfilled") {
       return {
         translation,
         audioStream: result.value.audioStream,
@@ -96,10 +94,7 @@ export const genAudioWithTimestampsForTranslations = async (
         success: true,
       };
     } else {
-      console.error(
-        `Error generating audio for translation ${translation.id}:`,
-        result.reason
-      );
+      console.error(`Error generating audio for translation ${translation.id}:`, result.reason);
       return {
         translation,
         audioStream: null,

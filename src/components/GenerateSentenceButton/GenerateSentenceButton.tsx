@@ -1,8 +1,8 @@
-'use client';
-import { generateSentenceAction } from '@/services/generateWordData/generateWordDataAction';
-import { Button } from '../ui/button';
-import React from 'react';
-import { ElevenLabsError } from 'elevenlabs';
+"use client";
+import { generateSentenceAction } from "@/services/generateWordData/generateWordDataAction";
+import { Button } from "../ui/button";
+import React from "react";
+import { ElevenLabsError } from "elevenlabs";
 
 export function GenerateSentenceButton({ wordId }: { wordId: number }) {
   // transition hook
@@ -15,10 +15,10 @@ export function GenerateSentenceButton({ wordId }: { wordId: number }) {
       const sentence = await generateSentenceAction(wordId);
       setSentence(sentence);
     } catch (err) {
-      console.log('ERR: ', err);
+      console.log("ERR: ", err);
       if (err instanceof ElevenLabsError) {
-        console.log('Error: ', err);
-        console.log('MESSAGE: ', err.message);
+        console.log("Error: ", err);
+        console.log("MESSAGE: ", err.message);
       }
     }
   };
@@ -27,7 +27,7 @@ export function GenerateSentenceButton({ wordId }: { wordId: number }) {
 
   return (
     <Button onClick={() => generate(generateSentence)}>
-      {isGenerating ? 'Generating...' : 'Generate Sentence'}
+      {isGenerating ? "Generating..." : "Generate Sentence"}
     </Button>
   );
 }

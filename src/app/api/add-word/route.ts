@@ -1,8 +1,8 @@
-import { currentUser } from '@clerk/nextjs/server';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { addWordSchema } from '@/components/AddWordButton/addWord.zod';
+import { currentUser } from "@clerk/nextjs/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import { addWordSchema } from "@/components/AddWordButton/addWord.zod";
 
 export type AddWordRouteResponse = {
   status: 200 | 500;
@@ -11,14 +11,14 @@ export type AddWordRouteResponse = {
 
 export async function POST(req: NextRequest) {
   try {
-    console.log('POST /api/add-word runs');
+    console.log("POST /api/add-word runs");
     const body = addWordSchema.parse(await req.json());
 
     const user = await currentUser();
 
     if (!user) {
       return NextResponse.json(
-        { message: 'User not found' },
+        { message: "User not found" },
         {
           status: 400,
         }
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         translations: {
           some: {
-            language: 'EN',
+            language: "EN",
             content: body.word,
           },
         },
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
     if (existingWord) {
       return NextResponse.json(
-        { message: 'Word already created' },
+        { message: "Word already created" },
         {
           status: 400,
         }
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
         translations: {
           create: [
             {
-              language: 'EN',
+              language: "EN",
               content: body.word,
             },
           ],
@@ -68,16 +68,16 @@ export async function POST(req: NextRequest) {
     // let response = await queryResourcePriceService(payload, accessToken, logger);
 
     return NextResponse.json(
-      { message: 'Word created successfully' },
+      { message: "Word created successfully" },
       {
         status: 200,
       }
     );
   } catch (err) {
-    console.log('POST /api/add-word', err);
+    console.log("POST /api/add-word", err);
 
     return NextResponse.json(
-      { message: 'Something went wrong' },
+      { message: "Something went wrong" },
       {
         status: 500,
       }

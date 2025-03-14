@@ -1,18 +1,15 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ImageIcon, Volume2 } from 'lucide-react';
-import { useSelectedSentences } from '@/contexts/SelectedSentencesContext';
-import { Translation } from '@prisma/client';
-import { ElevenLabsTimestamps } from '@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation';
-import { KaraokeText } from '@/components/KaraokeText/KaraokeText';
-import { parseTimestampsJson } from '@/lib/parseTimestampsJson';
-import {
-  adjustTimestamps,
-  DEFAULT_TIMING_CONFIG,
-} from '@/lib/adjustTimestamps';
+import React, { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ImageIcon, Volume2 } from "lucide-react";
+import { useSelectedSentences } from "@/contexts/SelectedSentencesContext";
+import { Translation } from "@prisma/client";
+import { ElevenLabsTimestamps } from "@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation";
+import { KaraokeText } from "@/components/KaraokeText/KaraokeText";
+import { parseTimestampsJson } from "@/lib/parseTimestampsJson";
+import { adjustTimestamps, DEFAULT_TIMING_CONFIG } from "@/lib/adjustTimestamps";
 
 // Karaoke timing configuration - adjust these values to fine-tune the synchronization
 const KARAOKE_TIMING_CONFIG = {
@@ -34,9 +31,7 @@ export function SentenceItem({ id, translation }: SentenceItemProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [timestamps, setTimestamps] = useState<ElevenLabsTimestamps | null>(
-    null
-  );
+  const [timestamps, setTimestamps] = useState<ElevenLabsTimestamps | null>(null);
 
   // Parse timestamps when component mounts
   useEffect(() => {
@@ -47,10 +42,7 @@ export function SentenceItem({ id, translation }: SentenceItemProps) {
       if (!result.success) throw new Error(result.error);
 
       // Apply timing adjustments for better synchronization
-      const adjustedTimestamps = adjustTimestamps(
-        result.data,
-        KARAOKE_TIMING_CONFIG
-      );
+      const adjustedTimestamps = adjustTimestamps(result.data, KARAOKE_TIMING_CONFIG);
       setTimestamps(adjustedTimestamps);
     }
   }, [translation.timestampsJson]);
@@ -62,17 +54,17 @@ export function SentenceItem({ id, translation }: SentenceItemProps) {
       audioRef.current = audio;
 
       // Set up event listeners
-      audio.addEventListener('timeupdate', handleTimeUpdate);
-      audio.addEventListener('ended', handleAudioEnded);
-      audio.addEventListener('play', () => setIsPlaying(true));
-      audio.addEventListener('pause', () => setIsPlaying(false));
+      audio.addEventListener("timeupdate", handleTimeUpdate);
+      audio.addEventListener("ended", handleAudioEnded);
+      audio.addEventListener("play", () => setIsPlaying(true));
+      audio.addEventListener("pause", () => setIsPlaying(false));
 
       return () => {
         // Clean up event listeners
-        audio.removeEventListener('timeupdate', handleTimeUpdate);
-        audio.removeEventListener('ended', handleAudioEnded);
-        audio.removeEventListener('play', () => setIsPlaying(true));
-        audio.removeEventListener('pause', () => setIsPlaying(false));
+        audio.removeEventListener("timeupdate", handleTimeUpdate);
+        audio.removeEventListener("ended", handleAudioEnded);
+        audio.removeEventListener("play", () => setIsPlaying(true));
+        audio.removeEventListener("pause", () => setIsPlaying(false));
         audio.pause();
       };
     }
@@ -99,22 +91,21 @@ export function SentenceItem({ id, translation }: SentenceItemProps) {
         audioRef.current.pause();
       } else {
         audioRef.current.play().catch((error) => {
-          console.error('Error playing audio:', error);
+          console.error("Error playing audio:", error);
         });
       }
     }
   };
 
   return (
-    <div className="group flex items-center gap-2 p-3 rounded-lg hover:bg-white/5">
+    <div className="group flex items-center gap-2 rounded-lg p-3 hover:bg-white/5">
       <Checkbox
         id={`sentence-${id}`}
         checked={selected}
         onCheckedChange={handleCheckboxChange}
-        className="h-5 w-5 border-white/30 data-[state=checked]:bg-pink-500 data-[state=checked]:border-pink-500 rounded-sm"
+        className="h-5 w-5 rounded-sm border-white/30 data-[state=checked]:border-pink-500 data-[state=checked]:bg-pink-500"
       />
-      {timestamps &&
-      (timestamps.normalized_alignment || timestamps.alignment) ? (
+      {timestamps && (timestamps.normalized_alignment || timestamps.alignment) ? (
         <KaraokeText
           text={translation.content}
           timestamps={timestamps.normalized_alignment || timestamps.alignment}
@@ -125,14 +116,14 @@ export function SentenceItem({ id, translation }: SentenceItemProps) {
       ) : (
         <p className="flex-1 text-white/90">{translation.content}</p>
       )}
-      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
         {translation.audioUrl && (
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-white/70 hover:text-pink-400 hover:bg-white/5"
+            className="h-8 w-8 text-white/70 hover:bg-white/5 hover:text-pink-400"
             onClick={handlePlayAudio}
-            aria-label={isPlaying ? 'Pause audio' : 'Play audio'}
+            aria-label={isPlaying ? "Pause audio" : "Play audio"}
             tabIndex={0}
           >
             <Volume2 className="h-4 w-4" />
@@ -141,7 +132,7 @@ export function SentenceItem({ id, translation }: SentenceItemProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-white/70 hover:text-pink-400 hover:bg-white/5"
+          className="h-8 w-8 text-white/70 hover:bg-white/5 hover:text-pink-400"
           aria-label="Show image"
           tabIndex={0}
         >

@@ -1,7 +1,7 @@
 import {
   ElevenLabsTimestamps,
   TimestampData,
-} from '@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation';
+} from "@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation";
 
 // Default timing adjustment configuration
 export const DEFAULT_TIMING_CONFIG = {
@@ -25,11 +25,7 @@ export function adjustTimestamps(
   const { speedFactor, offsetSeconds } = config;
 
   const result: ElevenLabsTimestamps = {
-    alignment: adjustTimestampData(
-      timestamps.alignment,
-      speedFactor,
-      offsetSeconds
-    ),
+    alignment: adjustTimestampData(timestamps.alignment, speedFactor, offsetSeconds),
   };
 
   if (timestamps.normalized_alignment) {

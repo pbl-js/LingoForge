@@ -1,6 +1,6 @@
-import { darkenRgbColor } from '@/lib/utils';
-import { motion } from 'framer-motion';
-import React from 'react';
+import { darkenRgbColor } from "@/lib/utils";
+import { motion } from "framer-motion";
+import React from "react";
 
 export function MeaningCard({
   index,
@@ -15,14 +15,12 @@ export function MeaningCard({
   renderFront: React.ReactNode;
   renderBack: React.ReactNode;
 }) {
-  console.log('index', index);
-  console.log('length', length);
+  console.log("index", index);
+  console.log("length", length);
   const [isFlipped, setIsFlipped] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
 
-  const [animationVariant, setAnimationVariant] = React.useState<
-    'stack' | 'flip'
-  >('stack');
+  const [animationVariant, setAnimationVariant] = React.useState<"stack" | "flip">("stack");
   function toggleFlipped() {
     setIsFlipped(!isFlipped);
   }
@@ -31,10 +29,10 @@ export function MeaningCard({
 
   const handleClick = () => {
     if (!isDragging) {
-      setAnimationVariant('flip');
+      setAnimationVariant("flip");
       toggleFlipped();
       setTimeout(() => {
-        setAnimationVariant('stack');
+        setAnimationVariant("stack");
       }, flippingAnimationTime * 1000);
     }
   };
@@ -55,24 +53,18 @@ export function MeaningCard({
       onDragEnd={handleDragEnd}
       onClick={handleClick}
       initial={{
-        backgroundColor: darkenRgbColor(
-          `rgba(126,34,206)`,
-          (length - 1 - index) * 10
-        ),
+        backgroundColor: darkenRgbColor(`rgba(126,34,206)`, (length - 1 - index) * 10),
         shadow: `0px 0px 10px 0px rgba(126,34,206)`,
         scale: 1 - (length - 1 - index) * 0.05,
         top: (length - 1 - index) * 20,
       }}
       animate={
-        animationVariant === 'stack'
+        animationVariant === "stack"
           ? {
               shadow: `0px 0px 10px 0px rgba(126,34,206)`,
               scale: 1 - (length - 1 - index) * 0.05,
               top: (length - 1 - index) * 20,
-              backgroundColor: darkenRgbColor(
-                `rgba(126,34,206)`,
-                (length - 1 - index) * 10
-              ),
+              backgroundColor: darkenRgbColor(`rgba(126,34,206)`, (length - 1 - index) * 10),
               rotateY: isFlipped ? 180 : 0,
             }
           : {
@@ -84,7 +76,7 @@ export function MeaningCard({
         top: 0,
         bottom: 0,
       }}
-      className="flex flex-col rounded-2xl h-[80%]  absolute top-0 left-0 w-full shadow-xl"
+      className="absolute left-0 top-0 flex h-[80%] w-full flex-col rounded-2xl shadow-xl"
     >
       {isFlipped ? renderBack : renderFront}
     </motion.div>

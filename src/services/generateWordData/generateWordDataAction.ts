@@ -1,13 +1,13 @@
-'use server';
+"use server";
 
-import { PrismaClient } from '@prisma/client';
-import { revalidatePath } from 'next/cache';
-import { routes } from '@/consts/routes';
-import { getWordById } from '@/db/getWordById';
-import { auth } from '@clerk/nextjs/server';
-import { del } from '@vercel/blob';
-import { wordAiText, WordAiTextSchema } from '../wordAiText/wordAiText';
-import { getMatchTranslation } from '@/lib/getMatchTranslation';
+import { PrismaClient } from "@prisma/client";
+import { revalidatePath } from "next/cache";
+import { routes } from "@/consts/routes";
+import { getWordById } from "@/db/getWordById";
+import { auth } from "@clerk/nextjs/server";
+import { del } from "@vercel/blob";
+import { wordAiText, WordAiTextSchema } from "../wordAiText/wordAiText";
+import { getMatchTranslation } from "@/lib/getMatchTranslation";
 
 const prisma = new PrismaClient();
 
@@ -15,7 +15,7 @@ export async function generateSentenceAction(wordId: number) {
   const { userId } = await auth();
 
   if (!userId) {
-    throw new Error('Unauthorized');
+    throw new Error("Unauthorized");
   }
 
   const word = await getWordById(prisma, {
@@ -25,17 +25,14 @@ export async function generateSentenceAction(wordId: number) {
 
   if (!word) {
     return {
-      error: 'Word not found',
+      error: "Word not found",
     };
   }
 
-  const englishTranslation = getMatchTranslation(
-    word.translations,
-    'EN'
-  ).content;
+  const englishTranslation = getMatchTranslation(word.translations, "EN").content;
 
   const res = await wordAiText(englishTranslation);
-  const audioTranslation = getMatchTranslation(word.translations, 'EN');
+  const audioTranslation = getMatchTranslation(word.translations, "EN");
 
   //
 
@@ -44,16 +41,13 @@ export async function generateSentenceAction(wordId: number) {
     try {
       await del(audioTranslation.audioUrl);
     } catch (error) {
-      console.error('Failed to delete old audio:', error);
+      console.error("Failed to delete old audio:", error);
     }
   }
 
-  if (!res.choices[0]?.message.content)
-    throw new Error('No sentences for provided word');
+  if (!res.choices[0]?.message.content) throw new Error("No sentences for provided word");
 
-  const parsedRes = WordAiTextSchema.parse(
-    JSON.parse(res.choices[0]?.message.content)
-  );
+  const parsedRes = WordAiTextSchema.parse(JSON.parse(res.choices[0]?.message.content));
 
   const updatedWord = await prisma.$transaction(
     async (tx) => {
@@ -66,27 +60,20 @@ export async function generateSentenceAction(wordId: number) {
           similarWords: {
             create: parsedRes.similarWords.map((word) => {
               // Check if word is an object with en/pl properties or a simple string
-              const wordContent =
-                typeof word === 'object' && word.en ? word.en : word;
+              const wordContent = typeof word === "object" && word.en ? word.en : word;
               return {
                 translations: {
                   create: [
                     {
-                      language: 'EN',
-                      content:
-                        typeof wordContent === 'string'
-                          ? wordContent
-                          : String(wordContent),
+                      language: "EN",
+                      content: typeof wordContent === "string" ? wordContent : String(wordContent),
                     },
                     // Add Polish translation if available
-                    ...(typeof word === 'object' && word.pl
+                    ...(typeof word === "object" && word.pl
                       ? [
                           {
-                            language: 'PL',
-                            content:
-                              typeof word.pl === 'string'
-                                ? word.pl
-                                : String(word.pl),
+                            language: "PL",
+                            content: typeof word.pl === "string" ? word.pl : String(word.pl),
                           },
                         ]
                       : []),
@@ -99,14 +86,13 @@ export async function generateSentenceAction(wordId: number) {
             create: parsedRes.usagesList.map((usage) => {
               // Handle title which might be an object or string
               const titleContent =
-                typeof usage.usageTitle === 'object' && usage.usageTitle.en
+                typeof usage.usageTitle === "object" && usage.usageTitle.en
                   ? usage.usageTitle.en
                   : usage.usageTitle;
 
               // Handle description which might be an object or string
               const descContent =
-                typeof usage.usageDescription === 'object' &&
-                usage.usageDescription.en
+                typeof usage.usageDescription === "object" && usage.usageDescription.en
                   ? usage.usageDescription.en
                   : usage.usageDescription;
 
@@ -114,20 +100,17 @@ export async function generateSentenceAction(wordId: number) {
                 titleTranslations: {
                   create: [
                     {
-                      language: 'EN',
+                      language: "EN",
                       content:
-                        typeof titleContent === 'string'
-                          ? titleContent
-                          : String(titleContent),
+                        typeof titleContent === "string" ? titleContent : String(titleContent),
                     },
                     // Add Polish translation if available
-                    ...(typeof usage.usageTitle === 'object' &&
-                    usage.usageTitle.pl
+                    ...(typeof usage.usageTitle === "object" && usage.usageTitle.pl
                       ? [
                           {
-                            language: 'PL',
+                            language: "PL",
                             content:
-                              typeof usage.usageTitle.pl === 'string'
+                              typeof usage.usageTitle.pl === "string"
                                 ? usage.usageTitle.pl
                                 : String(usage.usageTitle.pl),
                           },
@@ -138,20 +121,16 @@ export async function generateSentenceAction(wordId: number) {
                 descriptionTranslations: {
                   create: [
                     {
-                      language: 'EN',
-                      content:
-                        typeof descContent === 'string'
-                          ? descContent
-                          : String(descContent),
+                      language: "EN",
+                      content: typeof descContent === "string" ? descContent : String(descContent),
                     },
                     // Add Polish translation if available
-                    ...(typeof usage.usageDescription === 'object' &&
-                    usage.usageDescription.pl
+                    ...(typeof usage.usageDescription === "object" && usage.usageDescription.pl
                       ? [
                           {
-                            language: 'PL',
+                            language: "PL",
                             content:
-                              typeof usage.usageDescription.pl === 'string'
+                              typeof usage.usageDescription.pl === "string"
                                 ? usage.usageDescription.pl
                                 : String(usage.usageDescription.pl),
                           },
@@ -164,18 +143,14 @@ export async function generateSentenceAction(wordId: number) {
                     translations: {
                       create: [
                         {
-                          language: 'EN',
+                          language: "EN",
                           content:
-                            typeof sentence.en === 'string'
-                              ? sentence.en
-                              : String(sentence.en),
+                            typeof sentence.en === "string" ? sentence.en : String(sentence.en),
                         },
                         {
-                          language: 'PL',
+                          language: "PL",
                           content:
-                            typeof sentence.pl === 'string'
-                              ? sentence.pl
-                              : String(sentence.pl),
+                            typeof sentence.pl === "string" ? sentence.pl : String(sentence.pl),
                         },
                       ],
                     },

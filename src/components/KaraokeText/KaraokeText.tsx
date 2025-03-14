@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { TimestampData } from '@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation';
+import React from "react";
+import { TimestampData } from "@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation";
 
 interface KaraokeTextProps {
   text: string;
@@ -18,7 +18,7 @@ export const KaraokeText = ({
   timestamps,
   isPlaying,
   currentTime,
-  glowColor = 'rgba(255, 105, 180, 0.7)', // Light magenta glow
+  glowColor = "rgba(255, 105, 180, 0.7)", // Light magenta glow
 }: KaraokeTextProps) => {
   // Extract character timestamps
   const getCharacterTimestamps = (): number[] | null => {
@@ -42,7 +42,7 @@ export const KaraokeText = ({
   const timestampChars = timestamps.characters || [];
 
   // Split the text into characters
-  const textChars = text.split('');
+  const textChars = text.split("");
 
   // Check if we need to adjust for leading/trailing spaces in normalized_alignment
   // This is a common issue with normalized_alignment vs alignment
@@ -51,7 +51,7 @@ export const KaraokeText = ({
 
   // If character counts don't match but are close (within a few spaces difference)
   if (textChars.length !== timestampChars.length) {
-    console.log('Character count mismatch, attempting to adjust');
+    console.log("Character count mismatch, attempting to adjust");
 
     // If timestamp chars has leading/trailing spaces that text doesn't have
     if (timestampChars.length > textChars.length) {
@@ -59,7 +59,7 @@ export const KaraokeText = ({
       let startOffset = 0;
       while (
         startOffset < timestampChars.length &&
-        timestampChars[startOffset] === ' ' &&
+        timestampChars[startOffset] === " " &&
         startOffset < timestampChars.length - textChars.length
       ) {
         startOffset++;
@@ -69,7 +69,7 @@ export const KaraokeText = ({
       let endOffset = 0;
       while (
         endOffset < timestampChars.length - textChars.length - startOffset &&
-        timestampChars[timestampChars.length - 1 - endOffset] === ' '
+        timestampChars[timestampChars.length - 1 - endOffset] === " "
       ) {
         endOffset++;
       }
@@ -90,15 +90,12 @@ export const KaraokeText = ({
 
   // Final check to ensure we have the right number of timestamps
   if (textChars.length !== adjustedTimestampChars.length) {
-    console.warn(
-      'Character count and timestamp count mismatch after adjustment',
-      {
-        textLength: textChars.length,
-        timestampLength: adjustedTimestampChars.length,
-        text,
-        timestampChars: adjustedTimestampChars.join(''),
-      }
-    );
+    console.warn("Character count and timestamp count mismatch after adjustment", {
+      textLength: textChars.length,
+      timestampLength: adjustedTimestampChars.length,
+      text,
+      timestampChars: adjustedTimestampChars.join(""),
+    });
     return <p className="flex-1 text-white/90">{text}</p>;
   }
 
@@ -113,7 +110,7 @@ export const KaraokeText = ({
     const adjustedCurrentTime = currentTime + 0.1;
 
     // If this character hasn't been spoken yet, no glow
-    if (adjustedCurrentTime < charTime) return { textShadow: 'none' };
+    if (adjustedCurrentTime < charTime) return { textShadow: "none" };
 
     // Calculate how recently this character was spoken
     const timeSinceSpoken = adjustedCurrentTime - charTime;
@@ -123,37 +120,37 @@ export const KaraokeText = ({
       // Just spoken - full glow
       return {
         textShadow: `0 0 10px ${glowColor}, 0 0 15px ${glowColor}`,
-        transition: 'text-shadow 0.15s ease-in-out',
+        transition: "text-shadow 0.15s ease-in-out",
       };
     } else if (timeSinceSpoken < 1.0) {
       // Spoken recently - medium glow
       return {
         textShadow: `0 0 7px ${glowColor}, 0 0 10px ${glowColor}`,
-        transition: 'text-shadow 0.2s ease-in-out',
+        transition: "text-shadow 0.2s ease-in-out",
       };
     } else if (timeSinceSpoken < 1.5) {
       // Spoken a bit ago - light glow
       return {
         textShadow: `0 0 5px ${glowColor}`,
-        transition: 'text-shadow 0.25s ease-in-out',
+        transition: "text-shadow 0.25s ease-in-out",
       };
     } else if (timeSinceSpoken < 2.0) {
       // Spoken a while ago - very light glow
       return {
         textShadow: `0 0 3px ${glowColor}`,
-        transition: 'text-shadow 0.3s ease-in-out',
+        transition: "text-shadow 0.3s ease-in-out",
       };
     }
 
     // Spoken long ago - no glow
     return {
-      textShadow: 'none',
-      transition: 'text-shadow 0.4s ease-in-out',
+      textShadow: "none",
+      transition: "text-shadow 0.4s ease-in-out",
     };
   };
 
   return (
-    <p className="flex-1 text-white/90 flex flex-wrap">
+    <p className="flex flex-1 flex-wrap text-white/90">
       {textChars.map((char, index) => {
         const glowStyle = getGlowStyle(index);
 
@@ -163,9 +160,9 @@ export const KaraokeText = ({
             className="inline-block"
             style={{
               ...glowStyle,
-              display: 'inline-block',
-              marginLeft: char === ' ' ? '0.25em' : '0',
-              marginRight: char === ' ' ? '0' : '0.01em',
+              display: "inline-block",
+              marginLeft: char === " " ? "0.25em" : "0",
+              marginRight: char === " " ? "0" : "0.01em",
             }}
           >
             {char}

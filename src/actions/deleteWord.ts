@@ -1,18 +1,18 @@
-'use server';
+"use server";
 
-import { PrismaClient } from '@prisma/client';
-import { currentUser } from '@clerk/nextjs/server';
-import { revalidatePath } from 'next/cache';
-import { routes } from '@/consts/routes';
-import { del } from '@vercel/blob';
-import { getWordById } from '@/db/getWordById';
+import { PrismaClient } from "@prisma/client";
+import { currentUser } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
+import { routes } from "@/consts/routes";
+import { del } from "@vercel/blob";
+import { getWordById } from "@/db/getWordById";
 
 export async function deleteWordAction(wordId: number) {
   try {
     const user = await currentUser();
 
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     const prisma = new PrismaClient();
@@ -24,13 +24,11 @@ export async function deleteWordAction(wordId: number) {
     });
 
     if (!word) {
-      throw new Error('Word not found');
+      throw new Error("Word not found");
     }
 
     // Find translations with audio URLs
-    const translationsWithAudio = word.translations.filter(
-      (translation) => translation.audioUrl
-    );
+    const translationsWithAudio = word.translations.filter((translation) => translation.audioUrl);
 
     await prisma.word.delete({
       where: {
@@ -45,7 +43,7 @@ export async function deleteWordAction(wordId: number) {
         try {
           await del(translation.audioUrl);
         } catch (error) {
-          console.error('Failed to delete audio file:', error);
+          console.error("Failed to delete audio file:", error);
           // Continue with other deletions even if one fails
         }
       }
@@ -54,7 +52,7 @@ export async function deleteWordAction(wordId: number) {
     revalidatePath(routes.wordList);
     return { success: true };
   } catch (err) {
-    console.error('Error deleting word:', err);
+    console.error("Error deleting word:", err);
     throw err;
   }
 }

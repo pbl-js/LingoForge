@@ -1,8 +1,8 @@
-import { put } from '@vercel/blob';
-import { db } from '@/lib/db';
-import { v4 as uuidv4 } from 'uuid';
-import { Prisma } from '@prisma/client';
-import { ElevenLabsTimestamps } from './genAudioWithTimestampsForTranslation';
+import { put } from "@vercel/blob";
+import { db } from "@/lib/db";
+import { v4 as uuidv4 } from "uuid";
+import { Prisma } from "@prisma/client";
+import { ElevenLabsTimestamps } from "./genAudioWithTimestampsForTranslation";
 
 interface AudioTranslationItem {
   translationId: number;
@@ -20,15 +20,13 @@ export const saveAudioForTranslations = async (
   audioTranslations: AudioTranslationItem[]
 ): Promise<void> => {
   try {
-    console.log('saveAudioForTranslations runs');
+    console.log("saveAudioForTranslations runs");
     if (!audioTranslations.length) {
-      throw new Error('No audio translations provided');
+      throw new Error("No audio translations provided");
     }
 
     // Get unique translation IDs
-    const translationIds = [
-      ...new Set(audioTranslations.map((item) => item.translationId)),
-    ];
+    const translationIds = [...new Set(audioTranslations.map((item) => item.translationId))];
 
     // Verify translations exist
     const existingTranslations = await db.translation.findMany({
@@ -43,9 +41,7 @@ export const saveAudioForTranslations = async (
     if (existingTranslations.length !== translationIds.length) {
       const foundIds = new Set(existingTranslations.map((t) => t.id));
       const missingIds = translationIds.filter((id) => !foundIds.has(id));
-      throw new Error(
-        `Translations with IDs ${missingIds.join(', ')} not found`
-      );
+      throw new Error(`Translations with IDs ${missingIds.join(", ")} not found`);
     }
 
     // Process each audio translation
@@ -55,13 +51,11 @@ export const saveAudioForTranslations = async (
 
     for (const item of audioTranslations) {
       // Upload audio buffer to Vercel Blob
-      const filename = `translation-${item.translationId}-${
-        item.languageCode
-      }-${uuidv4()}.mp3`;
+      const filename = `translation-${item.translationId}-${item.languageCode}-${uuidv4()}.mp3`;
 
       const blob = await put(filename, item.audioBuffer, {
-        access: 'public',
-        contentType: 'audio/mpeg',
+        access: "public",
+        contentType: "audio/mpeg",
       });
 
       // Add database update operation with timestamps
@@ -71,9 +65,7 @@ export const saveAudioForTranslations = async (
           data: {
             audioUrl: blob.url,
             // Store timestamps as a JSON string if they exist
-            ...(item.timestamps
-              ? { timestampsJson: JSON.stringify(item.timestamps) }
-              : {}),
+            ...(item.timestamps ? { timestampsJson: JSON.stringify(item.timestamps) } : {}),
           },
         })
       );
@@ -82,7 +74,7 @@ export const saveAudioForTranslations = async (
     // Execute all database operations in a transaction
     await db.$transaction(audioUpdates);
   } catch (error) {
-    console.error('Error saving audio for translations:', error);
+    console.error("Error saving audio for translations:", error);
     throw error;
   }
 };
