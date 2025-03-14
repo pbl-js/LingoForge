@@ -4,11 +4,9 @@ import * as React from "react";
 import Link from "next/link";
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { routes } from "@/consts/routes";
 import { cn } from "@/lib/utils";
@@ -26,24 +24,11 @@ export function MainNavigationMenu() {
     <NavigationMenu>
       <NavigationMenuList className="gap-2">
         <NavigationMenuItem>
-          <NavigationMenuTrigger className={navigationItemStyle}>Words</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid gap-3 rounded-md bg-purple-900 p-6">
-              <li className="row-span-3">
-                <NavigationMenuLink asChild>
-                  <Link
-                    className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-purple-800/50 to-purple-800 p-6 no-underline outline-none hover:bg-purple-700 focus:shadow-md"
-                    href={routes.wordList}
-                  >
-                    <div className="mb-2 mt-4 text-lg font-medium text-white">Word List</div>
-                    <p className="text-sm leading-tight text-white/90">
-                      View and manage your collection of words and their use cases.
-                    </p>
-                  </Link>
-                </NavigationMenuLink>
-              </li>
-            </ul>
-          </NavigationMenuContent>
+          <NavigationMenuLink asChild>
+            <Link href={routes.wordList} className={navigationItemStyle}>
+              Content
+            </Link>
+          </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem>
           <NavigationMenuLink asChild>
