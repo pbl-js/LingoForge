@@ -52,8 +52,9 @@ export async function deleteWordAction(wordId: number) {
     }
 
     revalidatePath(routes.wordList);
+    return { success: true };
   } catch (err) {
     console.error('Error deleting word:', err);
-    return { error: 'Failed to delete word' };
+    throw err;
   }
 }

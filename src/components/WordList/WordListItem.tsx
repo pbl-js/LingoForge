@@ -17,9 +17,10 @@ export function WordListItem({ id, title }: WordListItemProps) {
 
   const handleDelete = () => {
     startTransition(async () => {
-      const result = await deleteWordAction(id);
-      if (result.error) {
-        console.error(result.error);
+      try {
+        await deleteWordAction(id);
+      } catch (error) {
+        console.error(error);
       }
     });
   };
