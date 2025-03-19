@@ -4,9 +4,10 @@ import React from "react";
 import { WordForLearning } from "@/db/getWordsForLearning";
 import { GuessWordInSentence } from "./GuessWordInSentence";
 import { MeaningIntroduction } from "./MeaningIntroduction";
+import { LetterByLetter } from "./LetterByLetter";
 
 // Define game variants
-type GameVariant = "GuessWordInSentence" | "MeaningIntroduction";
+type GameVariant = "GuessWordInSentence" | "MeaningIntroduction" | "LetterByLetter";
 
 export function LearnWord({ wordsList }: { wordsList: WordForLearning[] }) {
   if (wordsList.length === 0 || wordsList[0] === undefined) {
@@ -17,7 +18,7 @@ export function LearnWord({ wordsList }: { wordsList: WordForLearning[] }) {
   const [currentWordId, setCurrentWordId] = React.useState<number>(firstWord.id);
 
   // State to track the current game variant
-  const [gameVariant, setGameVariant] = React.useState<GameVariant>("MeaningIntroduction");
+  const [gameVariant, setGameVariant] = React.useState<GameVariant>("LetterByLetter");
 
   const currentWord = wordsList.find((word) => word.id === currentWordId);
   if (!currentWord) throw new Error("Word not found");
@@ -30,7 +31,11 @@ export function LearnWord({ wordsList }: { wordsList: WordForLearning[] }) {
     setCurrentWordId(availableWords[randomIndex].id);
 
     // Randomly select a game variant for the next round
-    const variants: GameVariant[] = ["GuessWordInSentence", "MeaningIntroduction"];
+    const variants: GameVariant[] = [
+      "GuessWordInSentence",
+      "MeaningIntroduction",
+      "LetterByLetter",
+    ];
     const randomVariant = variants[Math.floor(Math.random() * variants.length)] as GameVariant;
     setGameVariant(randomVariant);
   }
@@ -44,9 +49,15 @@ export function LearnWord({ wordsList }: { wordsList: WordForLearning[] }) {
           currentWord={currentWord}
           nextRound={nextRound}
         />
-      ) : (
+      ) : gameVariant === "MeaningIntroduction" ? (
         <MeaningIntroduction
           key={`meaning-${currentWord.id}`}
+          currentWord={currentWord}
+          nextRound={nextRound}
+        />
+      ) : (
+        <LetterByLetter
+          key={`letter-${currentWord.id}`}
           currentWord={currentWord}
           nextRound={nextRound}
         />
