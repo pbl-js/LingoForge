@@ -10,11 +10,17 @@ const translationSchema = z.object({
   pl: z.string(),
 });
 
+// Sometimes translating english to english is not needed
+const translationSchemaExcludeEnglish = z.object({
+  pl: z.string(),
+});
+
 export const WordAiTextSchema = z.object({
   word: z.string().describe("The word provided by user"),
   similarWords: z.array(translationSchema),
   usagesList: z.array(
     z.object({
+      wordTranslation: translationSchemaExcludeEnglish,
       usageTitle: translationSchema,
       usageDescription: translationSchema,
       sentencesList: z.array(translationSchema),

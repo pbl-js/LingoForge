@@ -26,6 +26,7 @@ export async function getWordById(
         include: {
           titleTranslations: true,
           descriptionTranslations: true,
+          wordTranslations: true,
           sentences: {
             include: {
               translations: true,

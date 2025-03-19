@@ -51,6 +51,21 @@ export async function generateSentenceAction(wordId: number) {
 
   const updatedWord = await prisma.$transaction(
     async (tx) => {
+      // First delete existing similar words and useCases with their related data
+      await tx.word.update({
+        where: {
+          id: wordId,
+        },
+        data: {
+          similarWords: {
+            deleteMany: {},
+          },
+          useCases: {
+            deleteMany: {},
+          },
+        },
+      });
+
       // Create new useCases with sentences and similar words
       return tx.word.update({
         where: {
@@ -97,6 +112,14 @@ export async function generateSentenceAction(wordId: number) {
                   : usage.usageDescription;
 
               return {
+                wordTranslations: {
+                  create: [
+                    {
+                      language: "PL",
+                      content: usage.wordTranslation.pl,
+                    },
+                  ],
+                },
                 titleTranslations: {
                   create: [
                     {

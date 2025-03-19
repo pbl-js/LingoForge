@@ -43,7 +43,7 @@ export default async function Page({ params }: { params: Promise<{ ["word-id"]: 
   if (!word) return <NoWord />;
 
   const { content: wordTitle, audioUrl } = getMatchTranslation(word.translations, "EN");
-
+  console.log(word);
   return (
     <div className="flex flex-col items-start gap-3">
       <WordDetailsHeader title={wordTitle} wordId={word.id} audioUrl={audioUrl || undefined} />
@@ -71,6 +71,7 @@ export default async function Page({ params }: { params: Promise<{ ["word-id"]: 
           ) : (
             word.useCases.map((useCase) => (
               <div key={useCase.id} className="py-1 text-white">
+                <h4>{getMatchTranslation(useCase.wordTranslations, "PL").content}</h4>
                 {getMatchTranslation(useCase.titleTranslations, "EN").content}
                 <p className="text-gray-400">
                   {getMatchTranslation(useCase.descriptionTranslations, "EN").content}
