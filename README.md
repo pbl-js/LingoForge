@@ -20,6 +20,25 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Testing
+
+This project uses [Vitest](https://vitest.dev/) for testing. The following npm scripts are available:
+
+```bash
+# Run tests once
+npm run test
+
+# Run tests in watch mode (rerun on file changes)
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+```
+
+To add a new test, create a file with the `.test.tsx` or `.test.ts` extension next to the file you want to test. For example, to test `Button.tsx`, create `Button.test.tsx` in the same directory.
+
+Tests use React Testing Library for rendering components and asserting the output. See the [React Testing Library documentation](https://testing-library.com/docs/react-testing-library/intro/) for more information.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
