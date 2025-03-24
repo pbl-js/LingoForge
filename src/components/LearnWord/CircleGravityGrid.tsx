@@ -198,20 +198,35 @@ const CircleGravityGrid = ({
       bubbles.forEach((bubble) => {
         if (bubble.id === draggedBubble) return;
 
+        // Add small buffer zones for smoother boundary behavior
+        const bufferZone = 2;
+
+        let boundaryCollision = false;
+
         if (bubble.x - bubble.radius < 0) {
-          bubble.x = bubble.radius;
+          bubble.x = bubble.radius + bufferZone;
           bubble.vx = Math.abs(bubble.vx) * 0.3;
+          boundaryCollision = true;
         } else if (bubble.x + bubble.radius > dimensions.width) {
-          bubble.x = dimensions.width - bubble.radius;
+          bubble.x = dimensions.width - bubble.radius - bufferZone;
           bubble.vx = -Math.abs(bubble.vx) * 0.3;
+          boundaryCollision = true;
         }
 
         if (bubble.y - bubble.radius < 0) {
-          bubble.y = bubble.radius;
+          bubble.y = bubble.radius + bufferZone;
           bubble.vy = Math.abs(bubble.vy) * 0.3;
+          boundaryCollision = true;
         } else if (bubble.y + bubble.radius > dimensions.height - PHYSICS_CONFIG.BOTTOM_MARGIN) {
-          bubble.y = dimensions.height - PHYSICS_CONFIG.BOTTOM_MARGIN - bubble.radius;
+          bubble.y = dimensions.height - PHYSICS_CONFIG.BOTTOM_MARGIN - bubble.radius - bufferZone;
           bubble.vy = -Math.abs(bubble.vy) * 0.3;
+          boundaryCollision = true;
+        }
+
+        // Apply additional damping when colliding with boundaries to prevent oscillation
+        if (boundaryCollision) {
+          bubble.vx *= 0.8;
+          bubble.vy *= 0.8;
         }
       });
     },
@@ -280,11 +295,161 @@ const CircleGravityGrid = ({
               const nx = dx / distance;
               const ny = dy / distance;
 
-              b2.x += nx * (penetration + 1);
-              b2.y += ny * (penetration + 1);
+              // Define corner detection thresholds
+              const cornerThreshold = 20; // px from corner to detect corner state
 
-              b2.vx = nx * 3;
-              b2.vy = ny * 3;
+              // Check if bubble is in or near a corner
+              const isInTopLeft =
+                b2.x - b2.radius < cornerThreshold && b2.y - b2.radius < cornerThreshold;
+              const isInTopRight =
+                b2.x + b2.radius > dimensions.width - cornerThreshold &&
+                b2.y - b2.radius < cornerThreshold;
+              const isInBottomLeft =
+                b2.x - b2.radius < cornerThreshold &&
+                b2.y + b2.radius >
+                  dimensions.height - PHYSICS_CONFIG.BOTTOM_MARGIN - cornerThreshold;
+              const isInBottomRight =
+                b2.x + b2.radius > dimensions.width - cornerThreshold &&
+                b2.y + b2.radius >
+                  dimensions.height - PHYSICS_CONFIG.BOTTOM_MARGIN - cornerThreshold;
+
+              const isInCorner = isInTopLeft || isInTopRight || isInBottomLeft || isInBottomRight;
+
+              // Regular edge detection
+              const isNearHorizontalBoundary =
+                b2.x - b2.radius < 10 || b2.x + b2.radius > dimensions.width - 10;
+              const isNearVerticalBoundary =
+                b2.y - b2.radius < 10 ||
+                b2.y + b2.radius > dimensions.height - PHYSICS_CONFIG.BOTTOM_MARGIN - 10;
+
+              // Check for completely trapped state (both horizontal and vertical boundaries active)
+              const isTrapped = isNearHorizontalBoundary && isNearVerticalBoundary;
+
+              // Handle extreme case: completely trapped with dragged bubble approaching
+              if (isTrapped && distance < minDistance * 0.8) {
+                // Calculate vector from dragged bubble to container center
+                const centerX = dimensions.width / 2;
+                const centerY = dimensions.height / 2;
+                const toCenterX = centerX - b1.x;
+                const toCenterY = centerY - b1.y;
+                const toCenterDist = Math.sqrt(toCenterX * toCenterX + toCenterY * toCenterY);
+
+                // Normalize vector to center
+                const toCenterNormX = toCenterDist > 0 ? toCenterX / toCenterDist : 0;
+                const toCenterNormY = toCenterDist > 0 ? toCenterY / toCenterDist : 0;
+
+                // Add a slight randomization to break symmetry
+                const randomAngle = Math.random() * Math.PI * 2;
+                const randomX = Math.cos(randomAngle) * 0.2;
+                const randomY = Math.sin(randomAngle) * 0.2;
+
+                // Apply strong escape force toward center plus randomization
+                b2.x += (toCenterNormX + randomX) * (penetration + 6);
+                b2.y += (toCenterNormY + randomY) * (penetration + 6);
+
+                // Apply strong velocity to help escape
+                b2.vx = toCenterNormX * 5 + randomX * 2;
+                b2.vy = toCenterNormY * 5 + randomY * 2;
+
+                // Skip other handling for this trapped case
+                return;
+              }
+
+              if (isInCorner) {
+                // Special corner handling - determine best escape direction
+                let escapeX = 0;
+                let escapeY = 0;
+
+                // Determine forces in play
+                const forceX = Math.abs(nx);
+                const forceY = Math.abs(ny);
+                const isHorizontalForceStronger = forceX > forceY;
+
+                // For each corner, select the best escape route (slide along edge)
+                if (isInTopLeft) {
+                  // For top-left corner, slide either right or down
+                  if (isHorizontalForceStronger) {
+                    escapeX = 0; // No horizontal movement
+                    escapeY = 1; // Move down
+                  } else {
+                    escapeX = 1; // Move right
+                    escapeY = 0; // No vertical movement
+                  }
+                } else if (isInTopRight) {
+                  // For top-right corner, slide either left or down
+                  if (isHorizontalForceStronger) {
+                    escapeX = 0; // No horizontal movement
+                    escapeY = 1; // Move down
+                  } else {
+                    escapeX = -1; // Move left
+                    escapeY = 0; // No vertical movement
+                  }
+                } else if (isInBottomLeft) {
+                  // For bottom-left corner, slide either right or up
+                  if (isHorizontalForceStronger) {
+                    escapeX = 0; // No horizontal movement
+                    escapeY = -1; // Move up
+                  } else {
+                    escapeX = 1; // Move right
+                    escapeY = 0; // No vertical movement
+                  }
+                } else if (isInBottomRight) {
+                  // For bottom-right corner, slide either left or up
+                  if (isHorizontalForceStronger) {
+                    escapeX = 0; // No horizontal movement
+                    escapeY = -1; // Move up
+                  } else {
+                    escapeX = -1; // Move left
+                    escapeY = 0; // No vertical movement
+                  }
+                }
+
+                // Apply stronger escape force to move away from corner
+                b2.x += escapeX * (penetration + 4);
+                b2.y += escapeY * (penetration + 4);
+
+                // Apply escape velocity to continue movement along the edge
+                b2.vx = escapeX * 3;
+                b2.vy = escapeY * 3;
+              }
+              // Apply more gentle displacement when near boundaries but not in corner
+              else if (isNearHorizontalBoundary || isNearVerticalBoundary) {
+                // Find the direction with more space to move
+                let moveX = nx;
+                let moveY = ny;
+
+                if (isNearHorizontalBoundary) {
+                  // Prioritize vertical movement when near horizontal boundaries
+                  moveX *= 0.2;
+                  moveY *= 1.5;
+                }
+
+                if (isNearVerticalBoundary) {
+                  // Prioritize horizontal movement when near vertical boundaries
+                  moveY *= 0.2;
+                  moveX *= 1.5;
+                }
+
+                // Normalize the movement vector
+                const moveMagnitude = Math.sqrt(moveX * moveX + moveY * moveY);
+                if (moveMagnitude > 0) {
+                  moveX = moveX / moveMagnitude;
+                  moveY = moveY / moveMagnitude;
+                }
+
+                b2.x += moveX * (penetration + 2);
+                b2.y += moveY * (penetration + 2);
+
+                // Apply smoother velocity changes for sliding
+                b2.vx = moveX * 2;
+                b2.vy = moveY * 2;
+              } else {
+                // Standard behavior away from boundaries
+                b2.x += nx * (penetration + 1);
+                b2.y += ny * (penetration + 1);
+                b2.vx = nx * 3;
+                b2.vy = ny * 3;
+              }
             }
           } else if (b2.id === draggedBubble) {
             const dx = b1.x - b2.x;
@@ -299,11 +464,161 @@ const CircleGravityGrid = ({
               const nx = dx / distance;
               const ny = dy / distance;
 
-              b1.x += nx * (penetration + 1);
-              b1.y += ny * (penetration + 1);
+              // Define corner detection thresholds
+              const cornerThreshold = 20; // px from corner to detect corner state
 
-              b1.vx = nx * 3;
-              b1.vy = ny * 3;
+              // Check if bubble is in or near a corner
+              const isInTopLeft =
+                b1.x - b1.radius < cornerThreshold && b1.y - b1.radius < cornerThreshold;
+              const isInTopRight =
+                b1.x + b1.radius > dimensions.width - cornerThreshold &&
+                b1.y - b1.radius < cornerThreshold;
+              const isInBottomLeft =
+                b1.x - b1.radius < cornerThreshold &&
+                b1.y + b1.radius >
+                  dimensions.height - PHYSICS_CONFIG.BOTTOM_MARGIN - cornerThreshold;
+              const isInBottomRight =
+                b1.x + b1.radius > dimensions.width - cornerThreshold &&
+                b1.y + b1.radius >
+                  dimensions.height - PHYSICS_CONFIG.BOTTOM_MARGIN - cornerThreshold;
+
+              const isInCorner = isInTopLeft || isInTopRight || isInBottomLeft || isInBottomRight;
+
+              // Regular edge detection
+              const isNearHorizontalBoundary =
+                b1.x - b1.radius < 10 || b1.x + b1.radius > dimensions.width - 10;
+              const isNearVerticalBoundary =
+                b1.y - b1.radius < 10 ||
+                b1.y + b1.radius > dimensions.height - PHYSICS_CONFIG.BOTTOM_MARGIN - 10;
+
+              // Check for completely trapped state (both horizontal and vertical boundaries active)
+              const isTrapped = isNearHorizontalBoundary && isNearVerticalBoundary;
+
+              // Handle extreme case: completely trapped with dragged bubble approaching
+              if (isTrapped && distance < minDistance * 0.8) {
+                // Calculate vector from dragged bubble to container center
+                const centerX = dimensions.width / 2;
+                const centerY = dimensions.height / 2;
+                const toCenterX = centerX - b2.x;
+                const toCenterY = centerY - b2.y;
+                const toCenterDist = Math.sqrt(toCenterX * toCenterX + toCenterY * toCenterY);
+
+                // Normalize vector to center
+                const toCenterNormX = toCenterDist > 0 ? toCenterX / toCenterDist : 0;
+                const toCenterNormY = toCenterDist > 0 ? toCenterY / toCenterDist : 0;
+
+                // Add a slight randomization to break symmetry
+                const randomAngle = Math.random() * Math.PI * 2;
+                const randomX = Math.cos(randomAngle) * 0.2;
+                const randomY = Math.sin(randomAngle) * 0.2;
+
+                // Apply strong escape force toward center plus randomization
+                b1.x += (toCenterNormX + randomX) * (penetration + 6);
+                b1.y += (toCenterNormY + randomY) * (penetration + 6);
+
+                // Apply strong velocity to help escape
+                b1.vx = toCenterNormX * 5 + randomX * 2;
+                b1.vy = toCenterNormY * 5 + randomY * 2;
+
+                // Skip other handling for this trapped case
+                return;
+              }
+
+              if (isInCorner) {
+                // Special corner handling - determine best escape direction
+                let escapeX = 0;
+                let escapeY = 0;
+
+                // Determine forces in play
+                const forceX = Math.abs(nx);
+                const forceY = Math.abs(ny);
+                const isHorizontalForceStronger = forceX > forceY;
+
+                // For each corner, select the best escape route (slide along edge)
+                if (isInTopLeft) {
+                  // For top-left corner, slide either right or down
+                  if (isHorizontalForceStronger) {
+                    escapeX = 0; // No horizontal movement
+                    escapeY = 1; // Move down
+                  } else {
+                    escapeX = 1; // Move right
+                    escapeY = 0; // No vertical movement
+                  }
+                } else if (isInTopRight) {
+                  // For top-right corner, slide either left or down
+                  if (isHorizontalForceStronger) {
+                    escapeX = 0; // No horizontal movement
+                    escapeY = 1; // Move down
+                  } else {
+                    escapeX = -1; // Move left
+                    escapeY = 0; // No vertical movement
+                  }
+                } else if (isInBottomLeft) {
+                  // For bottom-left corner, slide either right or up
+                  if (isHorizontalForceStronger) {
+                    escapeX = 0; // No horizontal movement
+                    escapeY = -1; // Move up
+                  } else {
+                    escapeX = 1; // Move right
+                    escapeY = 0; // No vertical movement
+                  }
+                } else if (isInBottomRight) {
+                  // For bottom-right corner, slide either left or up
+                  if (isHorizontalForceStronger) {
+                    escapeX = 0; // No horizontal movement
+                    escapeY = -1; // Move up
+                  } else {
+                    escapeX = -1; // Move left
+                    escapeY = 0; // No vertical movement
+                  }
+                }
+
+                // Apply stronger escape force to move away from corner
+                b1.x += escapeX * (penetration + 4);
+                b1.y += escapeY * (penetration + 4);
+
+                // Apply escape velocity to continue movement along the edge
+                b1.vx = escapeX * 3;
+                b1.vy = escapeY * 3;
+              }
+              // Apply more gentle displacement when near boundaries but not in corner
+              else if (isNearHorizontalBoundary || isNearVerticalBoundary) {
+                // Find the direction with more space to move
+                let moveX = nx;
+                let moveY = ny;
+
+                if (isNearHorizontalBoundary) {
+                  // Prioritize vertical movement when near horizontal boundaries
+                  moveX *= 0.2;
+                  moveY *= 1.5;
+                }
+
+                if (isNearVerticalBoundary) {
+                  // Prioritize horizontal movement when near vertical boundaries
+                  moveY *= 0.2;
+                  moveX *= 1.5;
+                }
+
+                // Normalize the movement vector
+                const moveMagnitude = Math.sqrt(moveX * moveX + moveY * moveY);
+                if (moveMagnitude > 0) {
+                  moveX = moveX / moveMagnitude;
+                  moveY = moveY / moveMagnitude;
+                }
+
+                b1.x += moveX * (penetration + 2);
+                b1.y += moveY * (penetration + 2);
+
+                // Apply smoother velocity changes for sliding
+                b1.vx = moveX * 2;
+                b1.vy = moveY * 2;
+              } else {
+                // Standard behavior away from boundaries
+                b1.x += nx * (penetration + 1);
+                b1.y += ny * (penetration + 1);
+                b1.vx = nx * 3;
+                b1.vy = ny * 3;
+              }
             }
           }
           return;
@@ -356,7 +671,7 @@ const CircleGravityGrid = ({
         b2.y += correctionY * correctionFactor2;
       });
     },
-    [draggedBubble]
+    [dimensions.height, dimensions.width, draggedBubble]
   );
 
   // Position-based solver approach
@@ -389,23 +704,50 @@ const CircleGravityGrid = ({
               const nx = dx / distance;
               const ny = dy / distance;
 
+              // Check for boundary proximity
+              const b1NearBoundary =
+                b1.x - b1.radius < 10 ||
+                b1.x + b1.radius > dimensions.width - 10 ||
+                b1.y - b1.radius < 10 ||
+                b1.y + b1.radius > dimensions.height - PHYSICS_CONFIG.BOTTOM_MARGIN - 10;
+
+              const b2NearBoundary =
+                b2.x - b2.radius < 10 ||
+                b2.x + b2.radius > dimensions.width - 10 ||
+                b2.y - b2.radius < 10 ||
+                b2.y + b2.radius > dimensions.height - PHYSICS_CONFIG.BOTTOM_MARGIN - 10;
+
               const totalMass = b1.mass + b2.mass;
               const b1Factor = b2.mass / totalMass;
               const b2Factor = b1.mass / totalMass;
 
+              // Adjust correction factors based on boundary proximity
+              let corrB1Factor = b1Factor;
+              let corrB2Factor = b2Factor;
+
+              if (b1NearBoundary && !b2NearBoundary) {
+                // If only b1 is near boundary, shift more correction to b2
+                corrB1Factor *= 0.3;
+                corrB2Factor *= 1.7;
+              } else if (b2NearBoundary && !b1NearBoundary) {
+                // If only b2 is near boundary, shift more correction to b1
+                corrB2Factor *= 0.3;
+                corrB1Factor *= 1.7;
+              }
+
               const correctionX = nx * penetration;
               const correctionY = ny * penetration;
 
-              b1.x -= correctionX * b1Factor * 0.5;
-              b1.y -= correctionY * b1Factor * 0.5;
-              b2.x += correctionX * b2Factor * 0.5;
-              b2.y += correctionY * b2Factor * 0.5;
+              b1.x -= correctionX * corrB1Factor * 0.5;
+              b1.y -= correctionY * corrB1Factor * 0.5;
+              b2.x += correctionX * corrB2Factor * 0.5;
+              b2.y += correctionY * corrB2Factor * 0.5;
             }
           }
         }
       }
     },
-    [draggedBubble]
+    [draggedBubble, dimensions]
   );
 
   // Main physics update function
