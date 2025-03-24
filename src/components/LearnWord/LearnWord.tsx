@@ -4,10 +4,10 @@ import React from "react";
 import { WordForLearning } from "@/db/getWordsForLearning";
 import { GuessWordInSentence } from "./GuessWordInSentence";
 import { MeaningIntroduction } from "./MeaningIntroduction";
-import { LetterByLetter } from "./LetterByLetter";
+import { WordPuzzles } from "./WordPuzzles";
 
 // Define game variants
-type GameVariant = "GuessWordInSentence" | "MeaningIntroduction" | "LetterByLetter";
+type GameVariant = "GuessWordInSentence" | "MeaningIntroduction" | "WordPuzzles";
 
 export function LearnWord({ wordsList }: { wordsList: WordForLearning[] }) {
   if (wordsList.length === 0 || wordsList[0] === undefined) {
@@ -18,7 +18,7 @@ export function LearnWord({ wordsList }: { wordsList: WordForLearning[] }) {
   const [currentWordId, setCurrentWordId] = React.useState<number>(firstWord.id);
 
   // State to track the current game variant
-  const [gameVariant, setGameVariant] = React.useState<GameVariant>("LetterByLetter");
+  const [gameVariant, setGameVariant] = React.useState<GameVariant>("WordPuzzles");
 
   const currentWord = wordsList.find((word) => word.id === currentWordId);
   if (!currentWord) throw new Error("Word not found");
@@ -31,11 +31,7 @@ export function LearnWord({ wordsList }: { wordsList: WordForLearning[] }) {
     setCurrentWordId(availableWords[randomIndex].id);
 
     // Randomly select a game variant for the next round
-    const variants: GameVariant[] = [
-      "GuessWordInSentence",
-      "MeaningIntroduction",
-      "LetterByLetter",
-    ];
+    const variants: GameVariant[] = ["GuessWordInSentence", "MeaningIntroduction", "WordPuzzles"];
     const randomVariant = variants[Math.floor(Math.random() * variants.length)] as GameVariant;
     setGameVariant(randomVariant);
   }
@@ -56,8 +52,8 @@ export function LearnWord({ wordsList }: { wordsList: WordForLearning[] }) {
           nextRound={nextRound}
         />
       ) : (
-        <LetterByLetter
-          key={`letter-${currentWord.id}`}
+        <WordPuzzles
+          key={`word-puzzles-${currentWord.id}`}
           currentWord={currentWord}
           nextRound={nextRound}
         />

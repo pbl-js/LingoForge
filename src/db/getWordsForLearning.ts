@@ -31,6 +31,7 @@ export async function getWordsForLearning(
       },
       useCases: {
         include: {
+          wordTranslations: true,
           titleTranslations: true,
           descriptionTranslations: true,
           sentences: {

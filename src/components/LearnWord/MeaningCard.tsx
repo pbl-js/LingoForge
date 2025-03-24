@@ -1,4 +1,4 @@
-import { darkenRgbColor } from "@/lib/utils";
+import { cn, darkenRgbColor } from "@/lib/utils";
 import { motion } from "framer-motion";
 import React from "react";
 
@@ -8,12 +8,14 @@ export function MeaningCard({
   onDragEnd,
   renderBack,
   renderFront,
+  className,
 }: {
   index: number;
   length: number;
   onDragEnd: () => void;
   renderFront: React.ReactNode;
   renderBack: React.ReactNode;
+  className?: string;
 }) {
   console.log("index", index);
   console.log("length", length);
@@ -76,7 +78,10 @@ export function MeaningCard({
         top: 0,
         bottom: 0,
       }}
-      className="absolute left-0 top-0 flex h-[80%] w-full flex-col rounded-2xl shadow-xl"
+      className={cn(
+        "absolute left-0 top-0 flex h-[80%] w-full flex-col rounded-2xl shadow-xl",
+        className
+      )}
     >
       {isFlipped ? renderBack : renderFront}
     </motion.div>

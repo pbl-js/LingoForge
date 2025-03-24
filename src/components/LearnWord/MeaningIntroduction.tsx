@@ -57,7 +57,7 @@ export function MeaningIntroduction({
               item.descriptionTranslations,
               "EN"
             );
-            const { content: plTitle } = getMatchTranslation(item.titleTranslations, "PL");
+            const { content: plTitle } = getMatchTranslation(item.wordTranslations, "PL");
             const { content: plDescription } = getMatchTranslation(
               item.descriptionTranslations,
               "PL"
