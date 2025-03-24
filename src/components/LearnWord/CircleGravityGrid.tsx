@@ -29,11 +29,21 @@ type Bubble = {
   movementEnergy: number;
 };
 
-const MusicGenreBubbles = ({
-  items,
-}: {
+interface CircleGravityGridProps {
   items: { name: string; size: number; color: string }[];
-}) => {
+  children: React.ReactNode;
+  childrenRef: React.RefObject<HTMLDivElement | null>;
+  setInputState: React.Dispatch<
+    React.SetStateAction<"idle" | "hoovered" | "correct" | "incorrect">
+  >;
+}
+
+const CircleGravityGrid = ({
+  items,
+  children,
+  childrenRef,
+  setInputState,
+}: CircleGravityGridProps) => {
   // Use state with initial values to prevent empty initial render
   const [bubbles, setBubbles] = useState<Bubble[]>(() => {
     // Return initial bubbles directly in the state initializer
@@ -452,6 +462,22 @@ const MusicGenreBubbles = ({
   const handleMouseMove = (e: { clientX: number; clientY: number }) => {
     if (draggedBubble !== null) {
       if (!containerRef.current) throw new Error("containerRef is required");
+
+      // Part responsible for handling input state
+      if (!childrenRef.current) throw new Error("childrenRef is required");
+      const childrenRect = childrenRef.current.getBoundingClientRect();
+      const isBubbleOverChildren =
+        e.clientX > childrenRect.left &&
+        e.clientX < childrenRect.right &&
+        e.clientY > childrenRect.top &&
+        e.clientY < childrenRect.bottom;
+
+      if (isBubbleOverChildren) {
+        setInputState("hoovered");
+      } else {
+        setInputState("idle");
+      }
+      //end of part responsible for handling input state
       const rect = containerRef.current.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
@@ -538,9 +564,7 @@ const MusicGenreBubbles = ({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="absolute bottom-4 left-3 right-3 flex items-center justify-center rounded-xl border-2 p-3 text-center text-xl font-semibold text-white">
-          Apprehand
-        </div>
+        <div className="absolute bottom-4 left-3 right-3">{children}</div>
 
         {bubbles.map((bubble, index) => (
           <div
@@ -569,4 +593,4 @@ const MusicGenreBubbles = ({
   );
 };
 
-export default MusicGenreBubbles;
+export default CircleGravityGrid;
