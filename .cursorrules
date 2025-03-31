@@ -42,3 +42,4 @@ Follow these rules when you write code:
 - Use shadcn@latest instead of shadcn-ui@latest
 - Add "use client" to the top of all client components.
 - Use useTransition hook instead of useState when it can be replaced.
+- Avoid nested ternary operators
