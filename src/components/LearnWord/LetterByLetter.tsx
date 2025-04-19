@@ -15,6 +15,7 @@ type WordPart = {
 
 export function LetterByLetter({
   currentWord,
+  nextRound,
 }: {
   currentWord: WordForLearning;
   nextRound: () => void;
@@ -30,15 +31,9 @@ export function LetterByLetter({
       mistaken: false,
     }))
   );
-  console.log(parts);
   const nextCorrectPartIndex = parts.findIndex((part) => !part.succeed);
 
-  // const handleContinue = () => {
-  //   nextRound();
-  // };
-
   function handlePartClick(part: WordPart) {
-    console.log("first");
     if (nextCorrectPartIndex === -1) {
       throw new Error("No more parts to correct");
     }
@@ -49,11 +44,15 @@ export function LetterByLetter({
     }
 
     if (part.content === correctPart) {
-      setParts((prev) =>
-        prev.map((p) =>
-          p.content === part.content ? { ...p, succeed: true } : { ...p, mistaken: false }
-        )
+      const newParts: WordPart[] = parts.map((p) =>
+        p.content === part.content ? { ...p, succeed: true } : { ...p, mistaken: false }
       );
+      setParts(newParts);
+
+      const allPartsSucceeded = newParts.every((part) => part.succeed);
+      if (allPartsSucceeded) {
+        nextRound();
+      }
     } else {
       setParts((prev) =>
         prev.map((p) => (p.content === part.content ? { ...p, mistaken: true } : p))
@@ -65,33 +64,39 @@ export function LetterByLetter({
     <div className="mx-auto flex h-full w-full max-w-md flex-col items-center justify-center gap-4 px-4">
       <h1 className="mb-10 text-center text-3xl font-bold text-white">Learn this word</h1>
 
-      <div className="flex gap-2">
-        {parts.map(
-          (part, index) =>
-            !part.succeed && (
-              <button
-                key={index}
-                onClick={() => handlePartClick(part)}
-                className={cn(
-                  "cursor-pointer rounded-full border border-white px-6 py-2 text-white hover:bg-white/10",
-                  {
-                    "bg-green-500": part.succeed,
-                    "bg-white/10 hover:bg-white/10": part.mistaken,
-                  }
-                )}
-              >
-                {part.content}
-              </button>
-            )
-        )}
+      <div className="flex h-full items-center">
+        <div className="flex gap-2">
+          {parts.map(
+            (part, index) =>
+              !part.succeed && (
+                <button
+                  key={index}
+                  onClick={() => handlePartClick(part)}
+                  className={cn(
+                    "cursor-pointer rounded-full border border-white px-8 py-4 text-lg text-white hover:bg-white/10",
+                    {
+                      "bg-green-500": part.succeed,
+                      "bg-white/10 hover:bg-white/10": part.mistaken,
+                    }
+                  )}
+                >
+                  {part.content}
+                </button>
+              )
+          )}
+        </div>
       </div>
 
-      <div className="rounded-full border border-white p-4 text-white">
-        {getWordDisplay(wordTitle, parts)
-          .split("")
-          .map((char, index) => (
-            <span key={index}>{char}</span>
-          ))}
+      <div className="flex w-full justify-center rounded-full border border-white p-4 text-white">
+        <div>
+          {getWordDisplay(wordTitle, parts)
+            .split("")
+            .map((char, index) => (
+              <span key={index} className={cn("font-mono")}>
+                {char}
+              </span>
+            ))}
+        </div>
       </div>
     </div>
   );
