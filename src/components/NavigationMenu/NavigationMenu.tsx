@@ -30,13 +30,13 @@ export function MainNavigationMenu() {
             </Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
-        <NavigationMenuItem>
+        {/* <NavigationMenuItem>
           <NavigationMenuLink asChild>
             <Link href={routes.promptTester} className={navigationItemStyle}>
               Prompts
             </Link>
           </NavigationMenuLink>
-        </NavigationMenuItem>
+        </NavigationMenuItem> */}
         <NavigationMenuItem>
           <NavigationMenuLink asChild>
             <Link href={routes.learn} className={navigationItemStyle}>
