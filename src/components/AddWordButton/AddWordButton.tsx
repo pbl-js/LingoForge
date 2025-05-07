@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -25,6 +25,7 @@ import { Input } from "../ui/input";
 import wretch from "wretch";
 import { addWordSchema } from "./addWord.zod";
 import { useRouter } from "next/navigation";
+import { GenMeaningsWithSentences } from "@/services/genMeaningsWithSentences/genMeaningsWithSentences.ai";
 
 export function AddWordButton({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = React.useState(false);
@@ -49,6 +50,40 @@ export function AddWordButton({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const word = form.watch("word");
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [aiData, setAiData] = React.useState<GenMeaningsWithSentences | null>(null);
+  console.log(aiData);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+  useEffect(() => {
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+    debounceTimeout.current = setTimeout(() => {
+      setIsLoading(true);
+      fetch("/api/meaning-and-sentences", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ word }),
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.message || "Failed to fetch word");
+          }
+          return res.json();
+        })
+        .then((data) => setAiData(data.data))
+        .catch((err) => console.log(err.message))
+        .finally(() => setIsLoading(false));
+    }, 400);
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [word]);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -69,14 +104,44 @@ export function AddWordButton({ children }: { children: React.ReactNode }) {
                 <FormItem>
                   <FormLabel>Word</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your word" {...field} />
+                    <Input autoComplete="off" placeholder="Enter your word" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? "...Adding" : "Add word"}
+            {(() => {
+              if (isLoading) return <div>...Loading</div>;
+              else if (aiData && aiData.isValidEnglishWord === false)
+                return <div>This is not a valid english word</div>;
+              else if (aiData)
+                return (
+                  <div className="flex flex-col gap-4">
+                    To słowo ma więcej niż jedno znaczenie
+                    {aiData.usagesList.map((item) => (
+                      <div className="rounded-2xl bg-black/30" key={item.usageTitle.en}>
+                        <div className="rounded-2xl bg-purple-900 p-3">
+                          <h3 className="mb-1 font-semibold">{item.usageTitle.en}</h3>
+                          <p className="">{item.usageDescription.en}</p>
+                        </div>
+                        <ul className="p-3 text-muted-foreground">
+                          {item.sentencesList.map((i) => (
+                            <li className="italic" key={i.en}>{`"${i.en}"`}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                );
+            })()}
+
+            <Button
+              size="lg"
+              className="w-full font-bold"
+              type="submit"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? "...Adding" : "ADD WORD"}
             </Button>
           </form>
         </Form>
