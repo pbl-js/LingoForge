@@ -53,8 +53,34 @@ export function WordListItem({ id, title }: WordListItemProps) {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add new word</DialogTitle>
-          <DialogDescription>You just need to add word. We will handle the rest.</DialogDescription>
+          <DialogDescription>
+            You just need to add a word. We will handle the rest.
+          </DialogDescription>
         </DialogHeader>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
+        <div>fsdfsdfsdfsdfsdf</div>
       </DialogContent>
     </Dialog>
   );
