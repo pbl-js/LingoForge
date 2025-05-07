@@ -22,7 +22,7 @@ const DialogOverlay = forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 flex content-start items-center justify-center overflow-y-auto bg-black/20 pt-24 backdrop-blur-sm data-[state=closed]:animate-out data-[state=closed]:fade-out-0 md:py-4",
+      "fixed inset-0 z-50 flex content-start items-center justify-center overflow-y-auto bg-black/50 pt-24 backdrop-blur-sm data-[state=closed]:animate-out data-[state=closed]:fade-out-0 md:py-4",
       { "data-[state=open]:animate-in data-[state=open]:fade-in-0": inAnimation },
       className
     )}
@@ -43,9 +43,9 @@ const DialogContent = forwardRef<
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
-          "relative z-50 m-auto grid w-full gap-4 overflow-x-hidden rounded-lg border border-white/20 bg-background p-4 shadow-lg",
+          "relative z-50 m-auto grid w-full gap-4 overflow-x-hidden border bg-background p-4 shadow-lg",
           "duration-500 data-[state=closed]:animate-out data-[state=closed]:fade-out-50 data-[state=closed]:slide-out-to-bottom-[48%] md:data-[state=closed]:zoom-out-50 md:data-[state=closed]:slide-out-to-bottom-0",
-          "rounded-lg md:max-w-[611px] md:p-8",
+          "rounded-2xl md:max-w-[611px] md:p-8",
           {
             "data-[state=open]:animate-in data-[state=open]:fade-in-50 data-[state=open]:slide-in-from-bottom-[48%] md:data-[state=open]:zoom-in-50 md:data-[state=open]:slide-in-from-top-0":
               inAnimation,

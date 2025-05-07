@@ -4,14 +4,9 @@ import { Button } from "../ui/button";
 import { Trash2 } from "lucide-react";
 import { deleteWordAction } from "@/actions/deleteWord";
 import { useTransition } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import React from "react";
+import { WordListItemModalContent } from "../WordListItemModalContent/WordListItemModalContent";
 
 type WordListItemProps = {
   id: number;
@@ -20,6 +15,7 @@ type WordListItemProps = {
 
 export function WordListItem({ id, title }: WordListItemProps) {
   const [isPending, startTransition] = useTransition();
+  const [isOpen, setIsOpen] = React.useState(false);
 
   const handleDelete = () => {
     startTransition(async () => {
@@ -32,7 +28,7 @@ export function WordListItem({ id, title }: WordListItemProps) {
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <div className="relative w-full md:w-auto">
         <DialogTrigger className="group flex w-full items-center justify-between gap-3 rounded-xl bg-purple-900 px-5 py-4 pr-[60px] md:w-auto">
           <div className="capitalize text-white transition-colors group-hover:text-purple-300">
@@ -50,37 +46,11 @@ export function WordListItem({ id, title }: WordListItemProps) {
         </Button>
       </div>
 
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Add new word</DialogTitle>
-          <DialogDescription>
-            You just need to add a word. We will handle the rest.
-          </DialogDescription>
+      <DialogContent className="flex min-h-full flex-col sm:max-w-[425px]">
+        <DialogHeader className="border-b pb-3">
+          <DialogTitle className="text-2xl font-bold capitalize">{title}</DialogTitle>
         </DialogHeader>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
-        <div>fsdfsdfsdfsdfsdf</div>
+        <WordListItemModalContent wordId={id} />
       </DialogContent>
     </Dialog>
   );
