@@ -46,7 +46,7 @@ export function WordListItem({ id, title }: WordListItemProps) {
         </Button>
       </div>
 
-      <DialogContent className="flex min-h-full flex-col sm:max-w-[425px]">
+      <DialogContent variant="fullContent">
         <DialogHeader className="border-b pb-3">
           <DialogTitle className="text-2xl font-bold capitalize">{title}</DialogTitle>
         </DialogHeader>

@@ -91,7 +91,7 @@ export function AddWordButton({ children }: { children: React.ReactNode }) {
       <DialogTrigger asChild>
         <Button>{children}</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent variant="fullContent">
         <DialogHeader>
           <DialogTitle>Add new word</DialogTitle>
           <DialogDescription>You just need to add word. We will handle the rest.</DialogDescription>

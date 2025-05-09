@@ -11,7 +11,7 @@ const prompts = [
   {
     title: "Word ai text" as const,
     description: "Generates sentences and usage examples for vocabulary learning",
-    prompt: WORD_AI_TEXT,
+    prompt: WORD_AI_TEXT(5),
     action: wordAiTextAction,
   },
   {
@@ -50,7 +50,7 @@ export default function PromptTesterPage() {
       try {
         if (title === "Word ai text") {
           console.log("Word ai text runs");
-          const res = await prompts[0].action("apprehand");
+          const res = await prompts[0].action("apprehend", 5);
           console.log(res);
         }
         // TODO: Implement actual prompt testing
