@@ -1,6 +1,5 @@
 "use client";
 
-import { AUDIO_SOUNDS } from "@/consts/game-config";
 import { WordForLearning } from "@/db/getWordsForLearning";
 import { cn } from "@/lib/utils";
 import { getMatchTranslation } from "@/lib/getMatchTranslation";
@@ -12,6 +11,7 @@ import { Check } from "lucide-react";
 import { parseTimestampsJson } from "@/lib/parseTimestampsJson";
 import { ElevenLabsTimestamps } from "@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation";
 import { adjustTimestamps, DEFAULT_TIMING_CONFIG } from "@/lib/adjustTimestamps";
+import { correctAnswerAudio, wrongAnswerAudio } from "@/consts/game-config";
 
 // Karaoke timing configuration - adjust these values to fine-tune the synchronization
 const KARAOKE_TIMING_CONFIG = {
@@ -28,9 +28,6 @@ export function GuessWordInSentence({
   currentWord: WordForLearning;
   nextRound: () => void;
 }) {
-  const correctAnswerAudio = new Audio(AUDIO_SOUNDS.correctAnswer);
-  const wrongAnswerAudio = new Audio(AUDIO_SOUNDS.wrongAnswer);
-
   // Get the English translation for the word title
   const { content: wordTitle } = getMatchTranslation(currentWord.translations, "EN");
 
@@ -39,7 +36,7 @@ export function GuessWordInSentence({
   const [isPlayingSentence, setIsPlayingSentence] = React.useState(false);
   const [timestamps, setTimestamps] = React.useState<ElevenLabsTimestamps | null>(null);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
-
+  console.log("Audio: ", audioRef.current);
   const [correctAnswerId, setCorrectAnswerId] = React.useState<number | null>(null);
   const [mistakeList, setMistakeList] = React.useState<number[]>([]);
   const [isExiting, setIsExiting] = React.useState(false);
@@ -162,6 +159,9 @@ export function GuessWordInSentence({
         // Set up event listeners
         audio.addEventListener("timeupdate", handleTimeUpdate);
         audio.addEventListener("ended", handleAudioEnded);
+      } else {
+        // If no audio, clear audioRef
+        audioRef.current = null;
       }
 
       // Parse timestamps if available
@@ -185,6 +185,23 @@ export function GuessWordInSentence({
       }
     };
   }, [currentWord, wordTitle, handleTimeUpdate, handleAudioEnded]);
+
+  // Handle auto-advance if no audio in karaoke phase
+  React.useEffect(() => {
+    if (gamePhase === "karaoke" && !audioRef.current) {
+      // No audio, so auto-advance after a short delay
+      const timeout = setTimeout(() => {
+        setGamePhase("transition");
+        setIsExiting(true);
+        setTimeout(() => {
+          nextRound();
+          setIsExiting(false);
+          setGamePhase("question");
+        }, 1000);
+      }, 2000); // Show karaoke for 2 seconds
+      return () => clearTimeout(timeout);
+    }
+  }, [gamePhase, nextRound]);
 
   const isCorrect = correctAnswerId === currentWord.id;
 
@@ -367,6 +384,9 @@ export function GuessWordInSentence({
                 />
               ) : (
                 <div>{sentenceText}</div>
+              )}
+              {!audioRef.current && (
+                <span className="ml-4 text-base text-white/60">(No audio available)</span>
               )}
             </div>
           </motion.div>

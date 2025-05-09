@@ -6,3 +6,6 @@ export const AUDIO_SOUNDS = {
   newWord:
     "https://ueetgnxhw203rpll.public.blob.vercel-storage.com/static-audio/new-K2BWLhJEHqdBL6G3W7MxPGyumRUXO0.mp3",
 };
+
+export const correctAnswerAudio = new Audio(AUDIO_SOUNDS.correctAnswer);
+export const wrongAnswerAudio = new Audio(AUDIO_SOUNDS.wrongAnswer);

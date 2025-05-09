@@ -8,6 +8,12 @@ import { LetterByLetter } from "./LetterByLetter";
 
 // Define game variants
 type GameVariant = "GuessWordInSentence" | "MeaningIntroduction" | "LetterByLetter";
+const variants: GameVariant[] = [
+  "GuessWordInSentence",
+  // "MeaningIntroduction",
+  "LetterByLetter",
+];
+const getRandomVariant = () => variants[Math.floor(Math.random() * variants.length)] as GameVariant;
 
 export function LearnWord({ wordsList }: { wordsList: WordForLearning[] }) {
   if (wordsList.length === 0 || wordsList[0] === undefined) {
@@ -17,8 +23,7 @@ export function LearnWord({ wordsList }: { wordsList: WordForLearning[] }) {
   const firstWord = wordsList[0];
   const [currentWordId, setCurrentWordId] = React.useState<number>(firstWord.id);
 
-  // State to track the current game variant
-  const [gameVariant, setGameVariant] = React.useState<GameVariant>("LetterByLetter");
+  const [gameVariant, setGameVariant] = React.useState<GameVariant>(getRandomVariant());
 
   const currentWord = wordsList.find((word) => word.id === currentWordId);
   if (!currentWord) throw new Error("Word not found");
@@ -30,38 +35,39 @@ export function LearnWord({ wordsList }: { wordsList: WordForLearning[] }) {
     if (!availableWords[randomIndex]) throw new Error("Random index is 0");
     setCurrentWordId(availableWords[randomIndex].id);
 
-    // Randomly select a game variant for the next round
-    const variants: GameVariant[] = [
-      "GuessWordInSentence",
-      "MeaningIntroduction",
-      "LetterByLetter",
-    ];
-    const randomVariant = variants[Math.floor(Math.random() * variants.length)] as GameVariant;
-    setGameVariant(randomVariant);
+    setGameVariant(getRandomVariant());
   }
 
-  // Render the appropriate game component based on the current variant
   return (
     <>
-      {gameVariant === "GuessWordInSentence" ? (
-        <GuessWordInSentence
-          key={`guess-${currentWord.id}`}
-          currentWord={currentWord}
-          nextRound={nextRound}
-        />
-      ) : gameVariant === "MeaningIntroduction" ? (
-        <MeaningIntroduction
-          key={`meaning-${currentWord.id}`}
-          currentWord={currentWord}
-          nextRound={nextRound}
-        />
-      ) : (
-        <LetterByLetter
-          key={`letter-${currentWord.id}`}
-          currentWord={currentWord}
-          nextRound={nextRound}
-        />
-      )}
+      {(() => {
+        switch (gameVariant) {
+          case "GuessWordInSentence":
+            return (
+              <GuessWordInSentence
+                key={`guess-${currentWord.id}`}
+                currentWord={currentWord}
+                nextRound={nextRound}
+              />
+            );
+          case "MeaningIntroduction":
+            return (
+              <MeaningIntroduction
+                key={`meaning-${currentWord.id}`}
+                currentWord={currentWord}
+                nextRound={nextRound}
+              />
+            );
+          case "LetterByLetter":
+            return (
+              <LetterByLetter
+                key={`letter-${currentWord.id}`}
+                currentWord={currentWord}
+                nextRound={nextRound}
+              />
+            );
+        }
+      })()}
     </>
   );
 }
