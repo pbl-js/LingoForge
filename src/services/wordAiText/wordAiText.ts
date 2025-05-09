@@ -30,13 +30,13 @@ export const WordAiTextSchema = z.object({
 
 export type WordAiText = z.infer<typeof WordAiTextSchema>;
 
-export const wordAiText = (sentence: string) =>
+export const wordAiText = (sentence: string, sentencesCount: number) =>
   openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
       {
         role: "developer",
-        content: WORD_AI_TEXT,
+        content: WORD_AI_TEXT(sentencesCount),
       },
       {
         role: "user",

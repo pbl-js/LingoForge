@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "LingoForge - Second brain for language learning",
     start_url: "/",
     display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#000000",
+    background_color: "#3b0764",
+    theme_color: "#3b0764",
     icons: [
       {
         src: "/icon-192x192.png",

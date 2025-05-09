@@ -31,7 +31,7 @@ export async function generateSentenceAction(wordId: number) {
 
   const englishTranslation = getMatchTranslation(word.translations, "EN").content;
 
-  const res = await wordAiText(englishTranslation);
+  const res = await wordAiText(englishTranslation, 5);
   const audioTranslation = getMatchTranslation(word.translations, "EN");
 
   //
