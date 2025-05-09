@@ -13,7 +13,7 @@ export async function genMeaningsWithSentencesAction(word: string) {
     throw new Error("Unauthorized");
   }
 
-  const res = await genMeaningsWithSentences(word);
+  const res = await genMeaningsWithSentences(word, 1);
 
   if (!res.choices[0]?.message.content) throw new Error("No sentences for provided word");
 

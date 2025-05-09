@@ -30,17 +30,17 @@ export const GenMeaningsWithSentencesSchema = z.object({
 
 export type GenMeaningsWithSentences = z.infer<typeof GenMeaningsWithSentencesSchema>;
 
-export const genMeaningsWithSentences = (sentence: string) =>
+export const genMeaningsWithSentences = (word: string, sentencesCount: number) =>
   openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
       {
         role: "developer",
-        content: WORD_AI_TEXT,
+        content: WORD_AI_TEXT(sentencesCount),
       },
       {
         role: "user",
-        content: sentence,
+        content: word,
       },
     ],
     response_format: zodResponseFormat(GenMeaningsWithSentencesSchema, "sentence"),
