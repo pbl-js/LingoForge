@@ -11,7 +11,7 @@ import { Check } from "lucide-react";
 import { parseTimestampsJson } from "@/lib/parseTimestampsJson";
 import { ElevenLabsTimestamps } from "@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation";
 import { adjustTimestamps, DEFAULT_TIMING_CONFIG } from "@/lib/adjustTimestamps";
-import { correctAnswerAudio, wrongAnswerAudio } from "@/consts/game-config";
+import { wrongAnswerAudio, gameSucceedAudio } from "@/consts/game-config";
 
 // Karaoke timing configuration - adjust these values to fine-tune the synchronization
 const KARAOKE_TIMING_CONFIG = {
@@ -72,7 +72,7 @@ export function GuessWordInSentence({
     const isCorrect = answerId === currentWord.id;
 
     if (isCorrect) {
-      correctAnswerAudio.play();
+      gameSucceedAudio.play();
       setCorrectAnswerId(answerId);
 
       // Start the transition sequence - immediately begin exit animations

@@ -6,6 +6,7 @@ import { getMatchTranslation } from "@/lib/getMatchTranslation";
 import { splitWordIntoParts } from "@/lib/splitWordIntoParts";
 import { cn } from "@/lib/utils";
 import { getWordDisplay } from "@/lib/getWordDisplay";
+import { correctAnswerAudio, wrongAnswerAudio } from "@/consts/game-config";
 
 type WordPart = {
   content: string;
@@ -42,7 +43,7 @@ export function LetterByLetter({
     if (!correctPart) {
       throw new Error("No more parts to correct");
     }
-
+    // Check if the part is correct
     if (part.content === correctPart) {
       const newParts: WordPart[] = parts.map((p) =>
         p.content === part.content ? { ...p, succeed: true } : { ...p, mistaken: false }
@@ -50,10 +51,14 @@ export function LetterByLetter({
       setParts(newParts);
 
       const allPartsSucceeded = newParts.every((part) => part.succeed);
+      correctAnswerAudio.play();
       if (allPartsSucceeded) {
         nextRound();
       }
-    } else {
+    }
+    // Check if the part is mistaken
+    else {
+      wrongAnswerAudio.play();
       setParts((prev) =>
         prev.map((p) => (p.content === part.content ? { ...p, mistaken: true } : p))
       );
