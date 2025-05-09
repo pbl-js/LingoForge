@@ -60,22 +60,24 @@ export function AddWordButton({ children }: { children: React.ReactNode }) {
       clearTimeout(debounceTimeout.current);
     }
     debounceTimeout.current = setTimeout(() => {
-      setIsLoading(true);
-      fetch("/api/meaning-and-sentences", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ word }),
-      })
-        .then(async (res) => {
-          if (!res.ok) {
-            const data = await res.json();
-            throw new Error(data.message || "Failed to fetch word");
-          }
-          return res.json();
+      if (word.length > 0) {
+        setIsLoading(true);
+        fetch("/api/meaning-and-sentences", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ word }),
         })
-        .then((data) => setAiData(data.data))
-        .catch((err) => console.log(err.message))
-        .finally(() => setIsLoading(false));
+          .then(async (res) => {
+            if (!res.ok) {
+              const data = await res.json();
+              throw new Error(data.message || "Failed to fetch word");
+            }
+            return res.json();
+          })
+          .then((data) => setAiData(data.data))
+          .catch((err) => console.log(err.message))
+          .finally(() => setIsLoading(false));
+      }
     }, 400);
     return () => {
       if (debounceTimeout.current) {
