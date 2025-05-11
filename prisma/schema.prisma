@@ -79,6 +79,13 @@ model Word {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   translations Translation[]
-  // learn as soon as possible
-  // It will be used to regenerate GameDataSet
+  // gameDataSetId Int?
+  // gameDataSet   GameDataSet? @relation(fields: [gameDataSetId], references: [id], onDelete: Cascade)
 }
+
+// model GameDataSet {
+//   id Int @id @default(autoincrement())
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   words Word[]
+// }

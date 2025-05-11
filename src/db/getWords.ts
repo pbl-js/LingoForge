@@ -16,4 +16,4 @@ export async function getWords(
   return words;
 }
 
-export type Word = Prisma.PromiseReturnType<typeof getWords>;
+export type Word = Prisma.PromiseReturnType<typeof getWords>[number];

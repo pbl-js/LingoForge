@@ -25,8 +25,22 @@ export function MainNavigationMenu() {
       <NavigationMenuList className="gap-2">
         <NavigationMenuItem>
           <NavigationMenuLink asChild>
+            <Link href={routes.topics} className={navigationItemStyle}>
+              Home
+            </Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+        <NavigationMenuItem>
+          <NavigationMenuLink asChild>
             <Link href={routes.wordList} className={navigationItemStyle}>
-              Content
+              Words
+            </Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+        <NavigationMenuItem>
+          <NavigationMenuLink asChild>
+            <Link href={routes.play} className={navigationItemStyle}>
+              Play
             </Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
@@ -37,13 +51,6 @@ export function MainNavigationMenu() {
             </Link>
           </NavigationMenuLink>
         </NavigationMenuItem> */}
-        <NavigationMenuItem>
-          <NavigationMenuLink asChild>
-            <Link href={routes.learn} className={navigationItemStyle}>
-              Learn
-            </Link>
-          </NavigationMenuLink>
-        </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
   );
