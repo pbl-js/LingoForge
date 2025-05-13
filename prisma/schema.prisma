@@ -45,9 +45,11 @@ model Sentence {
   id           Int           @id @default(autoincrement())
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  useCase      UseCase       @relation(fields: [useCaseId], references: [id], onDelete: Cascade)
-  useCaseId    Int
   translations Translation[]
+  useCase      UseCase?      @relation(fields: [useCaseId], references: [id], onDelete: Cascade)
+  useCaseId    Int?
+  word         Word?         @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  wordId       Int?
 }
 
 model UseCase {
@@ -72,13 +74,14 @@ model SimilarWord {
 }
 
 model Word {
-  id           Int           @id @default(autoincrement())
-  userId       String
-  useCases     UseCase[]
-  similarWords SimilarWord[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  translations Translation[]
+  id                Int           @id @default(autoincrement())
+  userId            String
+  useCases          UseCase[]
+  similarWords      SimilarWord[]
+  learningSentences Sentence[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  translations      Translation[]
   // gameDataSetId Int?
   // gameDataSet   GameDataSet? @relation(fields: [gameDataSetId], references: [id], onDelete: Cascade)
 }
