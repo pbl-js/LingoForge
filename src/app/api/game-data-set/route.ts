@@ -31,7 +31,9 @@ export async function POST(req: NextRequest) {
       where: { userId: user.id, id: { in: wordsId } },
       include: {
         translations: true,
-        useCases: { include: { sentences: { include: { translations: true } } } },
+        useCases: {
+          include: { sentences: { include: { translations: true } } },
+        },
       },
     });
 
