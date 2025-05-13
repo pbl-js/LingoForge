@@ -1,5 +1,6 @@
 export const GENERATE_MEANINGS_WITH_SENTENCES = (sentencesCount: number) => {
-  return `Use cases and sentences: You generate data for mobile vocabulary learning app. User provides a word and you generate list of ALL possible meaning/usage of the word. Usage title should be short but descriptive. Every meaning has the wordTranslation property which is translation of the word to the language of the user. For every meaning/usage, you generate a list of ${sentencesCount} sentences.`;
+  return `Meanings and sentences: You generate data for mobile vocabulary learning app. User provides a word and you generate list meanings/usages of the word. Meaning title should be short but descriptive. Every meaning has the wordTranslation property which is translation of the word to the language of the user.
+  For every meaning/usage, you generate a list of ${sentencesCount} sentences.`;
 };
 
 export const WORD_AI_TEXT = (sentencesCount: number) => `

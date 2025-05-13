@@ -123,6 +123,7 @@ export function AddWordButton({ children }: { children: React.ReactNode }) {
                     {aiData.usagesList.map((item) => (
                       <div className="rounded-2xl bg-black/30" key={item.usageTitle.en}>
                         <div className="rounded-2xl bg-purple-900 p-3">
+                          <h1>{item.wordTranslation.pl}</h1>
                           <h3 className="mb-1 font-semibold">
                             {item.usageTitle.en} | {item.usageTitle.pl}
                           </h3>
