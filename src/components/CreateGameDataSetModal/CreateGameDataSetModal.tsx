@@ -5,7 +5,7 @@ import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog
 import { Dialog } from "@/components/ui/dialog";
 import { getMatchTranslation } from "@/lib/getMatchTranslation";
 import { WordListItem } from "../WordList/WordListItem";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { WordListResponse } from "@/app/api/word-list/route";
 import { Button } from "../ui/button";
 
@@ -29,7 +29,20 @@ const CreateGameDataSetModalContent = () => {
     queryKey: ["word-list"],
     queryFn: () => fetch("/api/word-list").then((res) => res.json()),
   });
-  console.log(data);
+
+  const wordsIdToLearn = data?.wordList.map((word) => word.id);
+
+  const {
+    mutate: createGameDataSet,
+    // data: gameDataSet,
+    isPending: isCreatingGameDataSet,
+  } = useMutation({
+    mutationFn: () =>
+      fetch("/api/game-data-set", {
+        method: "POST",
+        body: JSON.stringify({ words: wordsIdToLearn }),
+      }),
+  });
   return (
     <>
       <DialogHeader>
@@ -54,7 +67,11 @@ const CreateGameDataSetModalContent = () => {
               const { content } = getMatchTranslation(word.translations, "EN");
               return <WordListItem key={word.id} id={word.id} title={content} />;
             })}
-            <Button className="mt-auto">{`Start Learning ${data.wordList.length} words`} </Button>
+            <Button className="mt-auto" onClick={() => createGameDataSet()}>
+              {isCreatingGameDataSet
+                ? "Creating..."
+                : `Start Learning (${data.wordList.length} words)`}
+            </Button>
           </div>
         );
       })()}
