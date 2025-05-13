@@ -4,6 +4,7 @@ import { ClerkProvider, RedirectToSignIn, SignedOut } from "@clerk/nextjs";
 import "./globals.css";
 import { auth } from "@clerk/nextjs/server";
 import { SelectedSentencesProvider } from "@/contexts/SelectedSentencesContext";
+import { RootClientProvider } from "@/components/RootClientProvider/RootClientProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,16 +30,20 @@ export default async function RootLayout({
 
   return (
     <ClerkProvider>
-      <SelectedSentencesProvider>
-        <html lang="en">
-          <body className={`${geistSans.variable} ${geistMono.variable} bg-purple-950 antialiased`}>
-            <SignedOut>
-              <RedirectToSignIn />
-            </SignedOut>
-            {children}
-          </body>
-        </html>
-      </SelectedSentencesProvider>
+      <RootClientProvider>
+        <SelectedSentencesProvider>
+          <html lang="en">
+            <body
+              className={`${geistSans.variable} ${geistMono.variable} bg-purple-950 antialiased`}
+            >
+              <SignedOut>
+                <RedirectToSignIn />
+              </SignedOut>
+              {children}
+            </body>
+          </html>
+        </SelectedSentencesProvider>
+      </RootClientProvider>
     </ClerkProvider>
   );
 }

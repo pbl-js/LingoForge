@@ -3,9 +3,11 @@ import React from "react";
 import { DialogTrigger } from "@/components/ui/dialog";
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Dialog } from "@/components/ui/dialog";
-import { Word } from "@/db/getWords";
 import { getMatchTranslation } from "@/lib/getMatchTranslation";
 import { WordListItem } from "../WordList/WordListItem";
+import { useQuery } from "@tanstack/react-query";
+import { WordListResponse } from "@/app/api/word-list/route";
+import { Button } from "../ui/button";
 
 export const CreateGameDataSetModal = () => {
   const [open, setOpen] = React.useState(false);
@@ -23,31 +25,11 @@ export const CreateGameDataSetModal = () => {
 };
 
 const CreateGameDataSetModalContent = () => {
-  const [wordList, setWordList] = React.useState<Word[] | null>(null);
-  const [isPending, startTransition] = React.useTransition();
-  const [error, setError] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    setError(null);
-    startTransition(() => {
-      fetch("/api/word-list", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      })
-        .then(async (res) => {
-          if (!res.ok) {
-            const data = await res.json();
-            throw new Error(data.message || "Failed to fetch word");
-          }
-          return res.json();
-        })
-        .then((data) => {
-          return setWordList(data.wordList);
-        })
-        .catch((err) => setError(err.message));
-    });
-  }, []);
-
+  const { data, isPending, error } = useQuery<WordListResponse>({
+    queryKey: ["word-list"],
+    queryFn: () => fetch("/api/word-list").then((res) => res.json()),
+  });
+  console.log(data);
   return (
     <>
       <DialogHeader>
@@ -59,19 +41,20 @@ const CreateGameDataSetModalContent = () => {
         }
 
         if (error) {
-          return <div>{error}</div>;
+          return <div>{error.message}</div>;
         }
 
-        if (!wordList) {
+        if (!data || data.wordList.length === 0) {
           return <div>No word list found</div>;
         }
 
         return (
-          <div className="flex flex-col gap-3">
-            {wordList.map((word) => {
+          <div className="flex h-full flex-col gap-3">
+            {data.wordList.map((word) => {
               const { content } = getMatchTranslation(word.translations, "EN");
               return <WordListItem key={word.id} id={word.id} title={content} />;
             })}
+            <Button className="mt-auto">{`Start Learning ${data.wordList.length} words`} </Button>
           </div>
         );
       })()}

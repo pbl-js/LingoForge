@@ -5,9 +5,9 @@ import { currentUser, User } from "@clerk/nextjs/server";
 import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-export type WordListResponse = NextResponse<{ wordList: Word[] }>;
+export type WordListResponse = { wordList: Word[] };
 
-export const GET = async (): Promise<WordListResponse> => {
+export const GET = async (): Promise<NextResponse<WordListResponse>> => {
   const user = (await currentUser()) as User;
 
   const prisma = new PrismaClient();
