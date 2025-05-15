@@ -74,21 +74,31 @@ model SimilarWord {
 }
 
 model Word {
-  id                Int           @id @default(autoincrement())
+  id                Int               @id @default(autoincrement())
   userId            String
   useCases          UseCase[]
   similarWords      SimilarWord[]
   learningSentences Sentence[]
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
   translations      Translation[]
-  // gameDataSetId Int?
-  // gameDataSet   GameDataSet? @relation(fields: [gameDataSetId], references: [id], onDelete: Cascade)
+  gameDataSets      GameDataSetWord[]
 }
 
-// model GameDataSet {
-//   id Int @id @default(autoincrement())
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-//   words Word[]
-// }
+model GameDataSet {
+  id        Int               @id @default(autoincrement())
+  userId    String
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  words     GameDataSetWord[]
+}
+
+model GameDataSetWord {
+  id            Int         @id @default(autoincrement())
+  word          Word        @relation(fields: [wordId], references: [id])
+  wordId        Int
+  gameDataSet   GameDataSet @relation(fields: [gameDataSetId], references: [id])
+  gameDataSetId Int
+
+  @@unique([wordId, gameDataSetId])
+}

@@ -1,7 +1,4 @@
-import {
-  ElevenLabsTimestamps,
-  TimestampData,
-} from "@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation";
+import { ElevenLabsTimestamps, TimestampData } from "@/services/genAudioForTranslation/types";
 
 // Default timing adjustment configuration
 export const DEFAULT_TIMING_CONFIG = {

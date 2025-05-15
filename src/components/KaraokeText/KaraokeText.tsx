@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { TimestampData } from "@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation";
+import { TimestampData } from "@/services/genAudioForTranslation/types";
 
 interface KaraokeTextProps {
   text: string;

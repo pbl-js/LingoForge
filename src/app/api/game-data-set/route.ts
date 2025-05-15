@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { aiLearningSentences } from "@/services/aiSentences/aiSentences";
 import { getMatchTranslation } from "@/lib/getMatchTranslation";
+import { saveAiLearningSentences } from "@/services/saveAiLearningSentences/saveAiLearningSentences";
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,53 +29,101 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "User not found" }, { status: 400 });
     }
 
-    // Get list of all words from database
     const prisma = new PrismaClient();
+
+    // Get list of all words from database
     const words = await prisma.word.findMany({
       where: { userId: user.id, id: { in: wordsId } },
       include: {
         translations: true,
+        learningSentences: true,
       },
     });
 
-    // Flatten translations to en property instead of array of translations
-    const wordsWithFlattenEnTranslations = words.map((item) => ({
-      ...item,
-      translations: {
-        en: getMatchTranslation(item.translations, "EN").content,
+    // TODO: if word has less than 5 learning sentences, generate more.
+
+    // Process each word. Generate learning sentences and save them to the database
+    const processedWords = await Promise.all(
+      words.map(async (word) => {
+        const enTranslation = getMatchTranslation(word.translations, "EN").content;
+        const generatedSentences = await aiLearningSentences(enTranslation, 5);
+
+        return saveAiLearningSentences({
+          prisma,
+          sentences: generatedSentences,
+          wordId: word.id,
+        });
+      })
+    );
+
+    // Generate audio for each sentence
+    // const translationsToGenerateAudio = processedWords
+    //   .flatMap((item) => item.learningSentences.flatMap((sentence) => sentence.translations))
+    //   .filter((item) => item.language === "EN");
+
+    // const audioResults = await genAudioWithTimestampsForTranslations(translationsToGenerateAudio);
+
+    // Filter successful results and prepare for saving
+    // const successfulResults = audioResults.filter((result) => result.success && result.audioStream);
+    // const audioTranslationItems = await Promise.all(
+    //   successfulResults.map(async (result) => {
+    //     if (!result.audioStream) {
+    //       throw new Error("Audio stream is null despite success flag");
+    //     }
+
+    //     const chunks = [];
+    //     for await (const chunk of result.audioStream) {
+    //       chunks.push(chunk);
+    //     }
+    //     const audioBuffer = Buffer.concat(chunks);
+
+    //     // Make sure we have data
+    //     if (!audioBuffer || audioBuffer.length === 0) {
+    //       throw new Error("Received empty audio buffer from ElevenLabs");
+    //     }
+
+    //     return {
+    //       translationId: result.translation.id,
+    //       languageCode: result.translation.language,
+    //       audioBuffer,
+    //       timestamps: result.timestamps,
+    //     };
+    //   })
+    // );
+
+    // await saveAudioForTranslations(audioTranslationItems);
+
+    // Identify any failed translations, if any, return error with failed ids
+    // const failedIds = audioResults
+    //   .filter((result) => !result.success)
+    //   .map((result) => result.translation.id);
+
+    // if (failedIds.length > 0) {
+    //   return NextResponse.json(
+    //     {
+    //       success: false,
+    //       message: `Failed to generate audio for ${failedIds.length} translations`,
+    //       failedIds,
+    //     },
+    //     { status: 500 }
+    //   );
+    // }
+
+    // Generate game data set
+    const gameDataSet = await prisma.gameDataSet.create({
+      data: {
+        userId: user.id,
+        words: {
+          create: processedWords.map((item) => ({
+            word: {
+              connect: { id: item.wordId },
+            },
+          })),
+        },
       },
-    }));
+    });
 
-    // Add promise for every word
-    const wordsWithFlattenEnTranslationsWithLearningSentencesPromises =
-      wordsWithFlattenEnTranslations.map((item) => {
-        return {
-          ...item,
-          learningSentencesPromise: aiLearningSentences(item.translations.en, 5),
-        };
-      });
-
-    // Resolve all promises at once. If any promise fails, all promises will be rejected
-    const wordsWithFlattenEnTranslationsWithLearningSentences = await Promise.all(
-      wordsWithFlattenEnTranslationsWithLearningSentencesPromises.map(
-        (item) => item.learningSentencesPromise
-      )
-    );
-
-    console.log(
-      "wordsWithFlattenEnTranslationsWithLearningSentences",
-      wordsWithFlattenEnTranslationsWithLearningSentences
-    );
-
-    // const wordsWithAiPromises = words.map(item => ({word: item.translations.}))
-    const learningSentences = await aiLearningSentences("take", 5);
-
-    console.log(learningSentences);
-    // If there is no simillar words, generate them
-    // Check count of learningSentences. If there is less than 5, generate more
-    // Check if every sentence has audioUrl. If not, generate it
-
-    // return NextResponse.json({ word }, { status: 200 });
+    return NextResponse.json({ data: gameDataSet }, { status: 200 });
   } catch (err) {
     console.error("POST /api/game-data-set", err);
     return NextResponse.json({ message: "Something went wrong" }, { status: 500 });

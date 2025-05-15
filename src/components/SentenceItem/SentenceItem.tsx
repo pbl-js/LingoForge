@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ImageIcon, Volume2 } from "lucide-react";
 import { useSelectedSentences } from "@/contexts/SelectedSentencesContext";
 import { Translation } from "@prisma/client";
-import { ElevenLabsTimestamps } from "@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation";
+import { ElevenLabsTimestamps } from "@/services/genAudioForTranslation/types";
 import { KaraokeText } from "@/components/KaraokeText/KaraokeText";
 import { parseTimestampsJson } from "@/lib/parseTimestampsJson";
 import { adjustTimestamps, DEFAULT_TIMING_CONFIG } from "@/lib/adjustTimestamps";

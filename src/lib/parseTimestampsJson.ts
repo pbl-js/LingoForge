@@ -1,4 +1,4 @@
-import { ElevenLabsTimestamps } from "@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation";
+import { ElevenLabsTimestamps } from "@/services/genAudioForTranslation/types";
 import { z } from "zod";
 
 type ParseResult =

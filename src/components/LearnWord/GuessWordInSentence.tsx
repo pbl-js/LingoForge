@@ -9,7 +9,7 @@ import { KaraokeText } from "@/components/KaraokeText/KaraokeText";
 import { WavyText } from "@/components/WavyText/WavyText";
 import { Check } from "lucide-react";
 import { parseTimestampsJson } from "@/lib/parseTimestampsJson";
-import { ElevenLabsTimestamps } from "@/services/genAudioForTranslation/genAudioWithTimestampsForTranslation";
+import { ElevenLabsTimestamps } from "@/services/genAudioForTranslation/types";
 import { adjustTimestamps, DEFAULT_TIMING_CONFIG } from "@/lib/adjustTimestamps";
 import { wrongAnswerAudio, gameSucceedAudio } from "@/consts/game-config";
 

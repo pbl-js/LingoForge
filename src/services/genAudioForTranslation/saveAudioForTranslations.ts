@@ -2,7 +2,7 @@ import { put } from "@vercel/blob";
 import { db } from "@/lib/db";
 import { v4 as uuidv4 } from "uuid";
 import { Prisma } from "@prisma/client";
-import { ElevenLabsTimestamps } from "./genAudioWithTimestampsForTranslation";
+import { ElevenLabsTimestamps } from "./types";
 
 interface AudioTranslationItem {
   translationId: number;
